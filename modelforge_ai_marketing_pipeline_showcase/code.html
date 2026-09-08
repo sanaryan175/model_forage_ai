@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ModelForge AI — Automated Deep Learning Model Optimization &amp; Conversion Pipeline</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-fixed": "#6ffbbe",
+            "tertiary": "#69f6b9",
+            "tertiary-container": "#48d99e",
+            "on-error": "#690005",
+            "error-container": "#93000a",
+            "primary-fixed-dim": "#47d6ff",
+            "on-tertiary-container": "#005b3d",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-fixed-variant": "#005236",
+            "secondary-container": "#571bc1",
+            "on-secondary": "#3c0091",
+            "background": "#10131b",
+            "surface-container-high": "#272a32",
+            "on-surface": "#e0e2ed",
+            "primary": "#a5e7ff",
+            "surface-container": "#1d2027",
+            "error": "#ffb4ab",
+            "surface": "#10131b",
+            "on-primary-fixed-variant": "#004e60",
+            "surface-container-highest": "#32353d",
+            "primary-container": "#00d2ff",
+            "outline-variant": "#3c494e",
+            "on-secondary-fixed-variant": "#5516be",
+            "surface-container-low": "#181b23",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-primary": "#003543",
+            "on-surface-variant": "#bbc9cf",
+            "inverse-surface": "#e0e2ed",
+            "on-primary-container": "#00566a",
+            "surface-tint": "#47d6ff",
+            "inverse-primary": "#00677f",
+            "primary-fixed": "#b6ebff",
+            "on-tertiary-fixed": "#002113",
+            "inverse-on-surface": "#2d3038",
+            "surface-container-lowest": "#0b0e15",
+            "on-background": "#e0e2ed",
+            "secondary-fixed": "#e9ddff",
+            "on-tertiary": "#003824",
+            "on-secondary-container": "#c4abff",
+            "outline": "#859399",
+            "surface-variant": "#32353d",
+            "surface-dim": "#10131b",
+            "surface-bright": "#363941",
+            "secondary-fixed-dim": "#d0bcff",
+            "on-primary-fixed": "#001f28",
+            "secondary": "#d0bcff",
+            "on-secondary-fixed": "#23005c"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "space-2xl": "3rem",
+            "gutter-mobile": "0.75rem",
+            "margin-desktop": "2rem",
+            "gutter-desktop": "1.25rem",
+            "space-xl": "2rem",
+            "space-xs": "0.25rem",
+            "space-base": "1rem",
+            "space-2xs": "0.125rem",
+            "space-md": "0.75rem",
+            "margin-mobile": "1rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "body-sm": ["Geist"],
+            "headline-md": ["Geist"],
+            "headline-xl": ["Geist"],
+            "headline-lg": ["Geist"],
+            "body-lg": ["Geist"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-xl-mobile": ["Geist"],
+            "body-md": ["Geist"],
+            "label-md": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"],
+            "code-md": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.025em", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "code-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-xl-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "code-md": ["13px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .custom-grid-pattern {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(60, 73, 78, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(60, 73, 78, 0.12) 1px, transparent 1px);
+    }
+    @keyframes beam {
+      0% { stroke-dashoffset: 24; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .flow-line-active {
+      stroke-dasharray: 4, 4;
+      animation: beam 1.2s linear infinite;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden min-h-screen">
+<!-- BACKGROUND AMBIENCE -->
+<div class="fixed inset-0 custom-grid-pattern pointer-events-none -z-10"></div>
+<div class="fixed -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-container/10 blur-[140px] pointer-events-none -z-10 rounded-full"></div>
+<div class="fixed top-1/3 right-[-10%] w-[500px] h-[500px] bg-secondary-container/15 blur-[160px] pointer-events-none -z-10 rounded-full"></div>
+<!-- NAVIGATION HEADER -->
+<header class="sticky top-0 z-50 w-full bg-surface-container-lowest/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-space-base sm:px-space-xl h-16 flex items-center justify-between">
+<!-- Brand Logo & Name -->
+<div class="flex items-center gap-space-md">
+<a class="flex items-center gap-2.5 group" href="#">
+<img alt="ModelForge AI Brandmark" class="w-8 h-8 rounded-lg object-contain ring-1 ring-outline-variant/60 shadow-[0_0_12px_rgba(0,210,255,0.25)]" src="https://lh3.googleusercontent.com/aida/AEtjO1U72hVjRQDzcae57Muv3kQnhSx1l07RddJ0EhkHcajSNsUb7UB4BFAjWTKd8H8uzgK8_5h5q0mHycPdN-dVUZXRoYVaQo5Tj3IGvtDK1p4EGhmsGfdBEnspQ4oeDs0Vfj3uMLKkpmcEI6FBwNeEPz0tReGmzFYkj-wnVvg1Cak5Gm0yCRIEkBskmgWsx3j0GVqJK2lDJ36AetV2GTLf0x5dkR7nsPWcNCe2c8prGX1Zj0dZGGlC_IAUCg"/>
+<span class="font-headline-md text-headline-md font-semibold text-primary tracking-tight group-hover:text-primary-container transition-colors">ModelForge AI</span>
+</a>
+<div class="hidden lg:flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant/50">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">us-east-1 online</span>
+</div>
+</div>
+<!-- Center Links -->
+<nav class="hidden md:flex items-center gap-space-lg">
+<a class="font-body-sm text-body-sm text-on-surface hover:text-primary-container transition-colors" href="#platform">Platform</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary-container transition-colors" href="#how-it-works">How It Works</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary-container transition-colors" href="#benchmarks">Benchmarks</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary-container transition-colors" href="#architecture">Architecture</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary-container transition-colors" href="#docs">Documentation</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary-container transition-colors" href="#pricing">Pricing</a>
+</nav>
+<!-- Right Action Cluster -->
+<div class="flex items-center gap-space-sm sm:gap-space-md">
+<button class="font-label-md text-label-md px-3 py-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors">
+          Sign In
+        </button>
+<button class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary-container hover:bg-primary-fixed-dim text-on-primary-container font-label-md text-label-md font-semibold shadow-[0_0_16px_rgba(0,210,255,0.35)] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[16px]">upload_file</span>
+<span>Upload Model</span>
+</button>
+</div>
+</div>
+</header>
+<!-- HERO SECTION -->
+<main class="relative pt-10 pb-20">
+<div class="max-w-7xl mx-auto px-space-base sm:px-space-xl text-center">
+<!-- Announcement Pill -->
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low border border-outline-variant hover:border-primary-container/60 cursor-pointer transition-all mb-space-lg group shadow-[0_0_12px_rgba(0,210,255,0.08)]">
+<span class="text-tertiary font-label-sm text-label-sm">⚡ v2.4 Released</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-primary transition-colors">Automated INT8 Quantization &amp; TensorRT 8.6 Support</span>
+<span class="material-symbols-outlined text-[14px] text-primary-container transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+</div>
+<!-- Main Headline -->
+<h1 class="font-headline-xl text-headline-xl sm:text-[54px] sm:leading-[62px] font-bold text-on-surface tracking-tight max-w-4xl mx-auto mb-space-base">
+        Compile. Optimize. Deploy. <br class="hidden sm:inline"/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-container to-tertiary">Anywhere.</span>
+</h1>
+<!-- Subtext -->
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-space-xl">
+        Transform trained Deep Learning models into optimized deployment formats with an automated cloud-based conversion and benchmarking pipeline.
+      </p>
+<!-- CTA Buttons -->
+<div class="flex flex-col sm:flex-row items-center justify-center gap-space-md mb-space-xl">
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary-container hover:bg-primary-fixed-dim text-on-primary-container font-headline-md text-[14px] font-semibold shadow-[0_0_24px_rgba(0,210,255,0.4)] active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+<span>Upload Your Model (.onnx)</span>
+</button>
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-surface-container border border-outline-variant hover:border-primary-container/50 hover:bg-surface-container-high text-on-surface font-headline-md text-[14px] font-medium transition-all">
+<span class="material-symbols-outlined text-[18px] text-primary">play_circle</span>
+<span>Explore Interactive Demo</span>
+</button>
+</div>
+<!-- Terminal Snippet Pill -->
+<div class="inline-flex items-center max-w-2xl w-full justify-between bg-surface-container-lowest border border-outline-variant/80 rounded-xl px-4 py-2.5 mb-16 font-code-sm text-code-sm text-left shadow-2xl">
+<div class="flex items-center gap-3 overflow-x-auto">
+<span class="text-primary-container select-none">$</span>
+<span class="text-on-surface">pip install modelforge-cli &amp;&amp; modelforge convert resnet50.onnx --target all</span>
+</div>
+<button class="p-1 text-on-surface-variant hover:text-primary transition-colors flex-shrink-0 ml-2" onclick="navigator.clipboard.writeText('pip install modelforge-cli &amp;&amp; modelforge convert resnet50.onnx --target all')" title="Copy snippet">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<!-- HERO VISUAL ARCHITECTURE / LIVE PIPELINE VISUALIZER -->
+<div class="w-full max-w-6xl mx-auto rounded-xl bg-surface-container-low border border-outline-variant p-space-base sm:p-space-xl shadow-[0_0_40px_rgba(0,0,0,0.6)] text-left relative overflow-hidden">
+<!-- Ambient top hairline -->
+<div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-primary-container/50 to-transparent"></div>
+<!-- Visualizer Header Toolbar -->
+<div class="flex flex-wrap items-center justify-between pb-space-base border-b border-outline-variant/60 gap-3 mb-space-lg">
+<div class="flex items-center gap-2.5">
+<span class="flex h-2.5 w-2.5 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-tertiary"></span>
+</span>
+<span class="font-headline-md text-headline-md text-on-surface">Live Graph Dispatch Visualizer</span>
+<span class="font-code-sm text-code-sm text-primary-container bg-surface-container px-2 py-0.5 rounded border border-outline-variant">RUN: #mf-89412</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Source: <span class="text-on-surface font-code-sm">PyTorch 2.2</span></span>
+<span class="text-outline-variant">|</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Worker Fleet: <span class="text-tertiary font-code-sm">3 Active</span></span>
+</div>
+</div>
+<!-- Visualizer Topology -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch relative">
+<!-- STAGE 1: Model Ingestion -->
+<div class="lg:col-span-3 flex flex-col justify-between p-space-md rounded-xl bg-surface-container border border-outline-variant">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-sm text-label-sm text-primary-container uppercase tracking-wider">STAGE 01: INPUT</span>
+<span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+</div>
+<div class="font-headline-md text-[14px] text-on-surface mb-1">PyTorch Graph Source</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant mb-4">checkpoint: <span class="text-primary font-medium">best_model.pt</span></p>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/80 mb-3">
+<div class="flex items-center justify-between text-on-surface font-code-sm text-code-sm mb-1">
+<span>Export: ONNX 1.16</span>
+<span class="text-tertiary font-medium">97.2 MB</span>
+</div>
+<div class="text-[10px] text-on-surface-variant font-code-sm">Opset 18 · Dynamic Batching</div>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Artifact ID</span>
+<span class="font-code-sm text-on-surface">art_8849b</span>
+</div>
+</div>
+<!-- STAGE 2: Cloud Event Router -->
+<div class="lg:col-span-3 flex flex-col justify-between p-space-md rounded-xl bg-surface-container border border-outline-variant">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">STAGE 02: ORCHESTRATE</span>
+<span class="material-symbols-outlined text-[16px] text-primary animate-spin">sync</span>
+</div>
+<div class="font-headline-md text-[14px] text-on-surface mb-1">AWS EventBridge Router</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant mb-3">Fan-out: Amazon S3 ➔ SQS</p>
+<div class="space-y-2">
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-container-lowest border border-outline-variant/60 font-code-sm text-code-sm">
+<span class="text-on-surface">sqs-tflite-queue</span>
+<span class="text-tertiary font-label-sm text-label-sm">READY</span>
+</div>
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-container-lowest border border-outline-variant/60 font-code-sm text-code-sm">
+<span class="text-on-surface">sqs-tensorrt-queue</span>
+<span class="text-primary-container font-label-sm text-label-sm">BURSTING</span>
+</div>
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-container-lowest border border-outline-variant/60 font-code-sm text-code-sm">
+<span class="text-on-surface">sqs-coreml-queue</span>
+<span class="text-tertiary font-label-sm text-label-sm">READY</span>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Fan-out Latency</span>
+<span class="font-code-sm text-tertiary">4.2 ms</span>
+</div>
+</div>
+<!-- STAGE 3: Parallel Workers -->
+<div class="lg:col-span-6 flex flex-col justify-between p-space-md rounded-xl bg-surface-container-high border border-outline-variant/90 relative shadow-inner">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-sm text-label-sm text-tertiary uppercase tracking-wider">STAGE 03: PARALLEL WORKER CLUSTERS</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary-container font-label-sm text-label-sm border border-primary-container/30">Auto-Scaling</span>
+</div>
+<!-- Worker 1: TFLite -->
+<div class="mb-2 p-2.5 rounded-lg bg-surface-container border border-outline-variant/60 hover:border-outline-variant transition-colors">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="font-code-md text-code-md text-on-surface font-semibold">TensorFlow Lite (.tflite)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-primary-container font-label-sm text-[10px]">FP16 / INT8</span>
+</div>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">28.4ms <span class="text-on-surface-variant font-normal">(2.4x)</span></span>
+</div>
+<div class="text-[11px] text-on-surface-variant flex justify-between">
+<span>Target: Mobile &amp; Edge TPU</span>
+<span class="font-code-sm text-outline">Size: 24.1 MB</span>
+</div>
+</div>
+<!-- Worker 2: TensorRT -->
+<div class="mb-2 p-2.5 rounded-lg bg-surface-container border border-primary-container/50 shadow-[0_0_12px_rgba(0,210,255,0.15)] relative">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="font-code-md text-code-md text-primary font-semibold">TensorRT (.engine)</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary/10 text-tertiary border border-tertiary/20 font-label-sm text-[10px]">FASTEST</span>
+</div>
+<span class="font-code-sm text-code-sm text-primary-container font-semibold">12.3ms <span class="text-on-surface-variant font-normal">(3.4x)</span></span>
+</div>
+<div class="text-[11px] text-on-surface-variant flex justify-between">
+<span>Target: NVIDIA A10G GPU (FP16/INT8)</span>
+<span class="font-code-sm text-primary">Fused: 42 layers</span>
+</div>
+</div>
+<!-- Worker 3: Core ML -->
+<div class="p-2.5 rounded-lg bg-surface-container border border-outline-variant/60 hover:border-outline-variant transition-colors">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="font-code-md text-code-md text-on-surface font-semibold">Core ML (.mlpackage)</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-secondary font-label-sm text-[10px]">Neural Engine</span>
+</div>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">18.2ms <span class="text-on-surface-variant font-normal">(2.3x)</span></span>
+</div>
+<div class="text-[11px] text-on-surface-variant flex justify-between">
+<span>Target: Apple Silicon (M1/M2/M3/A17)</span>
+<span class="font-code-sm text-outline">Size: 48.6 MB</span>
+</div>
+</div>
+</div>
+<!-- Verification & Registry Footer -->
+<div class="pt-3 mt-2 border-t border-outline-variant/40 flex flex-wrap items-center justify-between font-label-sm text-label-sm text-on-surface-variant gap-2">
+<span class="flex items-center gap-1.5 text-tertiary">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                Verified Bit-Exact (ΔAcc &lt; 0.04%)
+              </span>
+<span class="text-on-surface">Artifact Registry: S3 Bucket Published</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- HOW IT WORKS SECTION (5 Structured Developer Steps) -->
+<section class="py-20 bg-surface-container-lowest border-y border-outline-variant/40 relative" id="how-it-works">
+<div class="max-w-7xl mx-auto px-space-base sm:px-space-xl">
+<div class="max-w-2xl mb-12">
+<span class="font-label-sm text-label-sm text-primary-container uppercase tracking-widest block mb-2">Automated Execution Lifecycle</span>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight mb-3">How ModelForge AI Works</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          From PyTorch train state to production inference engines across heterogeneous edge and cloud targets in five deterministic stages.
+        </p>
+</div>
+<!-- 5 Bento Steps -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+<!-- Step 1 -->
+<div class="p-space-base rounded-xl bg-surface-container-low border border-outline-variant/70 hover:border-primary/50 transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-code-md text-code-md text-primary font-bold">01</span>
+<span class="p-2 rounded-lg bg-surface-container text-on-surface group-hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">psychology</span>
+</span>
+</div>
+<h3 class="font-headline-md text-[16px] text-on-surface font-semibold mb-2">Train</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Train CNN, ResNet, ViT, or LLM Transformer architectures in native PyTorch, JAX, or TensorFlow environments.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-code-sm text-code-sm text-outline">
+            torch.save(model.state_dict())
+          </div>
+</div>
+<!-- Step 2 -->
+<div class="p-space-base rounded-xl bg-surface-container-low border border-outline-variant/70 hover:border-primary/50 transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-code-md text-code-md text-primary font-bold">02</span>
+<span class="p-2 rounded-lg bg-surface-container text-on-surface group-hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">alt_route</span>
+</span>
+</div>
+<h3 class="font-headline-md text-[16px] text-on-surface font-semibold mb-2">Export</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Export validated computation graph to .onnx with automatic opset verification and dynamic tensor shape profiling.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-code-sm text-code-sm text-outline">
+            onnx.checker.check_model()
+          </div>
+</div>
+<!-- Step 3 -->
+<div class="p-space-base rounded-xl bg-surface-container-low border border-outline-variant/70 hover:border-primary/50 transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-code-md text-code-md text-primary font-bold">03</span>
+<span class="p-2 rounded-lg bg-surface-container text-on-surface group-hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">cloud_sync</span>
+</span>
+</div>
+<h3 class="font-headline-md text-[16px] text-on-surface font-semibold mb-2">Convert</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Automated cloud orchestration on AWS ECS containerized workers dispatching parallel builds for TFLite, TensorRT, and Core ML.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-code-sm text-code-sm text-outline">
+            Parallel ECS GPU tasks
+          </div>
+</div>
+<!-- Step 4 -->
+<div class="p-space-base rounded-xl bg-surface-container-low border border-outline-variant/70 hover:border-primary/50 transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-code-md text-code-md text-primary font-bold">04</span>
+<span class="p-2 rounded-lg bg-surface-container text-on-surface group-hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">tune</span>
+</span>
+</div>
+<h3 class="font-headline-md text-[16px] text-on-surface font-semibold mb-2">Optimize</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Apply FP16 mixed precision, INT8 entropy calibration, graph surgeon layer fusion, and kernel autotuning.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-code-sm text-code-sm text-outline">
+            TRT Builder &amp; Int8Calibrator
+          </div>
+</div>
+<!-- Step 5 -->
+<div class="p-space-base rounded-xl bg-surface-container-low border border-outline-variant/70 hover:border-primary/50 transition-all flex flex-col justify-between group">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-code-md text-code-md text-primary font-bold">05</span>
+<span class="p-2 rounded-lg bg-surface-container text-on-surface group-hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">speed</span>
+</span>
+</div>
+<h3 class="font-headline-md text-[16px] text-on-surface font-semibold mb-2">Benchmark</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Side-by-side automated telemetry comparing inference latency (P50/P99), memory footprint, and Top-1 accuracy delta.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/30 font-code-sm text-code-sm text-outline">
+            Telemetry artifact upload
+          </div>
+</div>
+</div>
+</div>
+</section>
+<!-- LIVE BENCHMARK PREVIEW MATRIX -->
+<section class="py-20 max-w-7xl mx-auto px-space-base sm:px-space-xl" id="benchmarks">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+<div>
+<span class="font-label-sm text-label-sm text-primary-container uppercase tracking-widest block mb-1">Empirical Performance</span>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Benchmark Preview Matrix</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Direct hardware telemetry sampled across NVIDIA A10G and Apple Silicon M2 Max.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Batch Size: 1</span>
+<span class="text-outline-variant">·</span>
+<span class="font-code-sm text-code-sm text-primary-container">Precision: FP16 / INT8 Calibrated</span>
+</div>
+</div>
+<!-- Comparison Table / Matrix -->
+<div class="overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-low shadow-xl">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/70 bg-surface-container font-label-md text-label-md text-on-surface-variant">
+<th class="p-4">Model &amp; Architecture</th>
+<th class="p-4">Format Target</th>
+<th class="p-4">Hardware Target</th>
+<th class="p-4">Latency (P50)</th>
+<th class="p-4">Throughput</th>
+<th class="p-4">RAM / VRAM</th>
+<th class="p-4 text-right">Artifact</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/40 font-body-sm text-body-sm text-on-surface">
+<!-- Row 1: ResNet-50 ONNX Baseline -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="p-4">
+<div class="font-headline-md text-[14px] text-on-surface font-semibold">resnet50</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant">PyTorch ➔ ONNX FP32 (Baseline)</div>
+</td>
+<td class="p-4"><span class="font-code-sm text-code-sm text-on-surface">.onnx</span></td>
+<td class="p-4 text-on-surface-variant">CPU (x86_64)</td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface">42.1 ms</td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface-variant">23.7 img/s</td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface-variant">380 MB</td>
+<td class="p-4 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant text-on-surface hover:text-primary font-code-sm text-code-sm">Download</button>
+</td>
+</tr>
+<!-- Row 2: ResNet-50 TensorRT -->
+<tr class="hover:bg-surface-container transition-colors bg-primary-container/[0.02]">
+<td class="p-4">
+<div class="font-headline-md text-[14px] text-primary font-semibold flex items-center gap-1.5">
+<span>resnet50</span>
+<span class="px-1.5 py-0.2 rounded bg-primary-container/20 text-primary-container font-label-sm text-[10px]">OPTIMAL</span>
+</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant">TensorRT 8.6 INT8 (Quantized)</div>
+</td>
+<td class="p-4"><span class="font-code-sm text-code-sm text-primary font-semibold">.engine</span></td>
+<td class="p-4 text-on-surface">NVIDIA A10G (TensorCore)</td>
+<td class="p-4 font-code-sm text-code-sm text-tertiary font-bold">12.3 ms <span class="text-[10px] text-tertiary">(3.4x)</span></td>
+<td class="p-4 font-code-sm text-code-sm text-tertiary font-medium">81.3 img/s</td>
+<td class="p-4 font-code-sm text-code-sm text-tertiary">96 MB</td>
+<td class="p-4 text-right">
+<button class="px-2.5 py-1 rounded bg-primary-container text-on-primary-container font-code-sm text-code-sm font-semibold hover:bg-primary-fixed-dim">Download</button>
+</td>
+</tr>
+<!-- Row 3: YOLOv8 TensorRT vs CoreML -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="p-4">
+<div class="font-headline-md text-[14px] text-on-surface font-semibold">yolov8n-detect</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant">Ultralytics Object Detection</div>
+</td>
+<td class="p-4"><span class="font-code-sm text-code-sm text-secondary">.mlpackage</span></td>
+<td class="p-4 text-on-surface">Apple Neural Engine (M2)</td>
+<td class="p-4 font-code-sm text-code-sm text-tertiary font-bold">8.4 ms <span class="text-[10px] text-tertiary">(2.8x)</span></td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface">119.0 img/s</td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface-variant">42 MB</td>
+<td class="p-4 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant text-on-surface hover:text-primary font-code-sm text-code-sm">Download</button>
+</td>
+</tr>
+<!-- Row 4: MobileNetV3 TFLite -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="p-4">
+<div class="font-headline-md text-[14px] text-on-surface font-semibold">mobilenet_v3_large</div>
+<div class="font-code-sm text-code-sm text-on-surface-variant">Edge Mobile Classifier</div>
+</td>
+<td class="p-4"><span class="font-code-sm text-code-sm text-on-surface">.tflite</span></td>
+<td class="p-4 text-on-surface">Snapdragon 8 Gen 2 / NPU</td>
+<td class="p-4 font-code-sm text-code-sm text-tertiary font-bold">5.1 ms <span class="text-[10px] text-tertiary">(3.1x)</span></td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface">196.0 img/s</td>
+<td class="p-4 font-code-sm text-code-sm text-on-surface-variant">18 MB</td>
+<td class="p-4 text-right">
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant text-on-surface hover:text-primary font-code-sm text-code-sm">Download</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- ENTERPRISE CLOUD TECH STACK BADGES -->
+<section class="py-16 bg-surface-container-lowest border-t border-outline-variant/40" id="architecture">
+<div class="max-w-7xl mx-auto px-space-base sm:px-space-xl text-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest block mb-3">Engineered on Cloud &amp; Deep Learning Standards</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold mb-8">Supported Runtimes &amp; Cloud Infrastructure</h3>
+<div class="flex flex-wrap items-center justify-center gap-3 max-w-4xl mx-auto">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">cloud</span>
+<span class="font-code-sm text-code-sm text-on-surface">AWS S3</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">alt_route</span>
+<span class="font-code-sm text-code-sm text-on-surface">EventBridge</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">memory</span>
+<span class="font-code-sm text-code-sm text-on-surface">ECS Fargate &amp; GPU Clusters</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-primary-container">deployed_code</span>
+<span class="font-code-sm text-code-sm text-on-surface">Docker</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">database</span>
+<span class="font-code-sm text-code-sm text-on-surface">PostgreSQL</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container">developer_board</span>
+<span class="font-code-sm text-code-sm text-on-surface">PyTorch</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-primary-fixed">terminal</span>
+<span class="font-code-sm text-code-sm text-on-surface">ONNX Runtime</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-primary-container/40">
+<span class="material-symbols-outlined text-[16px] text-primary-container">speed</span>
+<span class="font-code-sm text-code-sm text-primary">TensorRT 8.6</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">devices</span>
+<span class="font-code-sm text-code-sm text-on-surface">Apple Core ML</span>
+</div>
+</div>
+</div>
+</section>
+<!-- DEVELOPER CTA FOOTER BANNER -->
+<section class="py-16 max-w-7xl mx-auto px-space-base sm:px-space-xl">
+<div class="p-space-xl sm:p-12 rounded-xl bg-gradient-to-b from-surface-container to-surface-container-lowest border border-outline-variant text-center relative overflow-hidden">
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-primary-container/10 blur-[100px] pointer-events-none rounded-full"></div>
+<h2 class="font-headline-lg text-headline-lg sm:text-[32px] font-bold text-on-surface mb-3 tracking-tight">Ready to Accelerate Your Model Inference?</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl mx-auto mb-6">
+        Eliminate tedious manual CUDA engine compilation and opset patching. Start converting model artifacts with our automated telemetry pipeline today.
+      </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+<button class="px-6 py-3 rounded-lg bg-primary-container hover:bg-primary-fixed-dim text-on-primary-container font-headline-md text-[14px] font-semibold shadow-[0_0_20px_rgba(0,210,255,0.35)] transition-all">
+          Deploy Your First Pipeline
+        </button>
+<button class="px-6 py-3 rounded-lg bg-surface-container-high border border-outline-variant hover:border-primary-container/50 text-on-surface font-headline-md text-[14px] transition-all">
+          Read API Documentation
+        </button>
+</div>
+</div>
+</section>
+<!-- FOOTER -->
+<footer class="border-t border-outline-variant/60 bg-surface-container-lowest py-12 text-on-surface-variant" id="docs">
+<div class="max-w-7xl mx-auto px-space-base sm:px-space-xl">
+<div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+<!-- Brand & Description -->
+<div class="col-span-2">
+<div class="flex items-center gap-2 mb-3">
+<img alt="ModelForge AI Brandmark" class="w-6 h-6 rounded object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U72hVjRQDzcae57Muv3kQnhSx1l07RddJ0EhkHcajSNsUb7UB4BFAjWTKd8H8uzgK8_5h5q0mHycPdN-dVUZXRoYVaQo5Tj3IGvtDK1p4EGhmsGfdBEnspQ4oeDs0Vfj3uMLKkpmcEI6FBwNeEPz0tReGmzFYkj-wnVvg1Cak5Gm0yCRIEkBskmgWsx3j0GVqJK2lDJ36AetV2GTLf0x5dkR7nsPWcNCe2c8prGX1Zj0dZGGlC_IAUCg"/>
+<span class="font-headline-md text-[16px] font-semibold text-primary">ModelForge AI</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline max-w-sm mb-4">
+            Cloud-native machine learning compiler infrastructure converting deep neural networks into optimized edge and data-center engines.
+          </p>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span>All Cloud Engines Operational</span>
+</div>
+</div>
+<!-- Col 1: Platform -->
+<div>
+<h4 class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface mb-3">Platform</h4>
+<ul class="space-y-2 font-body-sm text-body-sm">
+<li><a class="hover:text-primary transition-colors" href="#">Model Conversion</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Quantization Engine</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Benchmarking Telemetry</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Artifact Registry</a></li>
+</ul>
+</div>
+<!-- Col 2: Developers -->
+<div>
+<h4 class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface mb-3">Developers</h4>
+<ul class="space-y-2 font-body-sm text-body-sm">
+<li><a class="hover:text-primary transition-colors" href="#">Documentation</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">CLI Reference</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">REST / gRPC API</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">GitHub Repository</a></li>
+</ul>
+</div>
+<!-- Col 3: Company -->
+<div>
+<h4 class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface mb-3">Ecosystem</h4>
+<ul class="space-y-2 font-body-sm text-body-sm">
+<li><a class="hover:text-primary transition-colors" href="#">System Status</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Changelog (v2.4)</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact Support</a></li>
+</ul>
+</div>
+</div>
+<!-- Bottom Bar -->
+<div class="pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between font-label-sm text-label-sm text-outline gap-4">
+<div>© 2025 ModelForge AI Inc. Precision Model Acceleration Pipeline.</div>
+<div class="flex items-center gap-4">
+<span class="font-code-sm text-code-sm text-on-surface-variant">Version 2.4.0-cloud</span>
+<span>·</span>
+<span>Region: us-east-1</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>
