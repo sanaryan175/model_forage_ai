@@ -1,0 +1,10 @@
+# Heavier ML dependencies used by the local in-process worker (LocalJobExecutor) and by ml/ scripts.
+# Kept separate from requirements.txt so the core API can start without them; conversion routes
+# that need a missing package report a clear "unsupported in this environment" error instead of failing to boot.
+torch==2.9.0
+torchvision==0.24.0
+tensorflow==2.21.0
+onnx2tf==2.6.8
+tf-keras==2.21.0
+coremltools==9.0
+psutil  # version pinned transitively by onnx2tf (==5.9.5)

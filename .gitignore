@@ -1,0 +1,61 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Node / frontend
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+
+# Python / backend
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# ML artifacts (never commit trained weights or exported models)
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.engine
+*.mlmodel
+*.mlpackage
+ml/data/
+ml/checkpoints/
+
+# Storage / uploads / logs (local mock mode writes here)
+storage/
+uploads/
+logs/
+*.log
+
+# Databases
+*.sqlite3
+*.db
+pgdata/
+backend/test_storage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Terraform
+infrastructure/terraform/.terraform/
+infrastructure/terraform/*.tfstate
+infrastructure/terraform/*.tfstate.*
+infrastructure/terraform/*.tfvars

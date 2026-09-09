@@ -1,0 +1,8 @@
+# Standalone requirements for the ml/ training example. If you're already running the
+# backend locally, its venv already has all of these (see backend/requirements.txt and
+# backend/requirements-ml.txt) — you don't need a second install.
+torch==2.9.0
+torchvision==0.24.0
+onnx==1.19.1
+onnxruntime==1.20.1
+numpy==2.2.2

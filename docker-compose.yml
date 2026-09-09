@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-modelforge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-modelforge}
+      POSTGRES_DB: ${POSTGRES_DB:-modelforge}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-modelforge}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        INSTALL_ML_DEPS: "true"
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-modelforge}:${POSTGRES_PASSWORD:-modelforge}@postgres:5432/${POSTGRES_DB:-modelforge}
+      LOCAL_STORAGE_ROOT: /data/storage
+    volumes:
+      - model_storage:/data/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  # ── Production-topology workers ─────────────────────────────
+  # Not needed for local AWS_MODE=mock (the backend runs conversions in-process via
+  # LocalJobExecutor). Start these to exercise the same distributed shape used in
+  # production ECS: `docker compose --profile aws up`.
+  tflite-worker:
+    profiles: ["aws"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/tflite-worker.Dockerfile
+    env_file: .env
+    environment:
+      AWS_MODE: aws
+    depends_on:
+      - postgres
+
+  tensorrt-worker:
+    profiles: ["aws"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/tensorrt-worker.Dockerfile
+    env_file: .env
+    environment:
+      AWS_MODE: aws
+    depends_on:
+      - postgres
+
+  coreml-worker:
+    profiles: ["aws"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/coreml-worker.Dockerfile
+    env_file: .env
+    environment:
+      AWS_MODE: aws
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
+  model_storage:
