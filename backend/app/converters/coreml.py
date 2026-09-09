@@ -90,9 +90,6 @@ class CoreMLConverter(ModelConverter):
             )
 
         # Real inference path — only reachable when actually running on macOS.
-        import coremltools as ct
-
-        model = ct.models.MLModel(converted_path)
-        # Core ML benchmarking on macOS would build a synthetic input from the model spec
-        # and time `model.predict(...)`; omitted here since this server does not run on macOS.
+        # Would load ct.models.MLModel(converted_path) and time model.predict(...) with a
+        # synthetic input built from the model spec; omitted since this server isn't macOS.
         return BenchmarkResult(model_size_bytes=size, device="macos-coreml")

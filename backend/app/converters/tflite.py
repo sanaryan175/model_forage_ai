@@ -1,6 +1,5 @@
 import importlib.util
 import os
-import tempfile
 
 from app.benchmark.engine import (
     generate_synthetic_inputs,
@@ -56,7 +55,7 @@ class TFLiteConverter(ModelConverter):
                 success=False, error="onnx2tf did not produce a .tflite output file", logs=logs
             )
 
-        output_path = os.path.join(output_dir, sorted(tflite_files)[0])
+        output_path = os.path.join(output_dir, min(tflite_files))
         logs.append(f"Produced {output_path}")
         return ConversionResult(success=True, output_path=output_path, logs=logs)
 

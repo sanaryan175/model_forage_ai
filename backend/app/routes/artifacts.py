@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.model import ArtifactListResponse
 from app.repositories.conversion_repository import ConversionRepository
+from app.schemas.model import ArtifactListResponse
 from app.storage.factory import get_storage_provider
 
 router = APIRouter(prefix="/api/artifacts", tags=["artifacts"])

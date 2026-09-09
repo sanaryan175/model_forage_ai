@@ -29,7 +29,7 @@ def timed_inference_stats(run_once: Callable[[], None], iterations: int = 50, wa
         samples_ms.append((time.perf_counter() - start) * 1000.0)
 
     samples_ms.sort()
-    p95_index = min(len(samples_ms) - 1, int(round(0.95 * (len(samples_ms) - 1))))
+    p95_index = min(len(samples_ms) - 1, round(0.95 * (len(samples_ms) - 1)))
     return {
         "mean_ms": statistics.fmean(samples_ms),
         "median_ms": statistics.median(samples_ms),

@@ -165,7 +165,7 @@ def run_conversion_job(job_id: str) -> None:
         log("Conversion completed")
         repo.update_status(job, JobStatus.COMPLETED, progress=100)
 
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("worker.job_failed", job_id=job_id)
         log(f"Unexpected error: {exc}", level=LogLevel.ERROR)
         repo.update_status(job, JobStatus.FAILED, error_message=str(exc))

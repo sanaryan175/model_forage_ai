@@ -8,16 +8,16 @@ from app.models.user import User
 
 __all__ = [
     "ApiKey",
-    "User",
+    "Benchmark",
+    "ConversionArtifact",
+    "ConversionJob",
+    "JobLog",
+    "JobStatus",
+    "LogLevel",
     "Model",
     "ModelFramework",
     "ModelStatus",
-    "ConversionJob",
-    "JobStatus",
     "OptimizationType",
     "TargetFormat",
-    "ConversionArtifact",
-    "Benchmark",
-    "JobLog",
-    "LogLevel",
+    "User",
 ]

@@ -1,8 +1,7 @@
-from datetime import datetime
-
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
+from app.models.base import utcnow
 from app.models.conversion_artifact import ConversionArtifact
 from app.models.conversion_job import ConversionJob, JobStatus
 from app.models.job_log import JobLog, LogLevel
@@ -68,9 +67,9 @@ class ConversionRepository:
             JobStatus.VALIDATING,
             JobStatus.CONVERTING,
         ) and job.started_at is None:
-            job.started_at = datetime.utcnow()
+            job.started_at = utcnow()
         if status in (JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED):
-            job.completed_at = datetime.utcnow()
+            job.completed_at = utcnow()
         self.db.commit()
         self.db.refresh(job)
         return job

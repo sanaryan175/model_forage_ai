@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 150
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF", "DTZ", "FURB"]
+ignore = [
+    "B008",   # FastAPI's `Depends(...)` in argument defaults is the documented pattern
+    "BLE001", # broad `except Exception` is intentional at service/worker error boundaries
+    "UP042",  # `class X(str, Enum)` is kept for SQLAlchemy/Pydantic compatibility over StrEnum
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["DTZ"]

@@ -6,7 +6,6 @@ from app.models.model import Model, ModelFramework, ModelStatus
 from app.repositories.model_repository import ModelRepository
 from app.storage.factory import get_storage_provider
 from app.utils.files import (
-    InvalidFileError,
     generate_storage_key,
     new_model_id,
     sanitize_filename,

@@ -17,7 +17,7 @@ def health_check(db: Session = Depends(get_db)) -> dict:
     try:
         db.execute(text("SELECT 1"))
         database_status = "ok"
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         database_status = f"error: {exc}"
 
     capabilities = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient, clearToken, getToken, setToken as persistToken } from "@/lib/api-client";
 import type { User } from "@/types/api";
@@ -16,12 +16,11 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [hasToken, setHasToken] = useState(false);
+  // Lazy-initialized so a hard page load reads the token on the very first render
+  // instead of one render late via an effect, which would otherwise cause AuthGuard
+  // to briefly see "no token" and redirect to /login even when one exists.
+  const [hasToken, setHasToken] = useState(() => Boolean(getToken()));
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    setHasToken(Boolean(getToken()));
-  }, []);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["me"],
