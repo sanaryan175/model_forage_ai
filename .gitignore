@@ -16,7 +16,7 @@ build/
 __pycache__/
 *.pyc
 *.pyo
-.venv/
+.venv*/
 venv/
 *.egg-info/
 .pytest_cache/
@@ -37,9 +37,9 @@ ml/data/
 ml/checkpoints/
 
 # Storage / uploads / logs (local mock mode writes here)
-storage/
-uploads/
-logs/
+/storage/
+/uploads/
+/backend/storage/
 *.log
 
 # Databases

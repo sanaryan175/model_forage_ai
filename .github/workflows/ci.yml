@@ -38,12 +38,14 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - name: Type check
-        run: npx tsc --noEmit
       - name: Lint
         run: npx eslint .
       - name: Build
         run: npm run build
+      - name: Type check
+        # Runs after build: tsc needs the route types Next.js generates into .next/types
+        # (e.g. LayoutProps) during `next build`/`next dev`, which don't exist beforehand.
+        run: npx tsc --noEmit
 
   docker-build:
     runs-on: ubuntu-latest
