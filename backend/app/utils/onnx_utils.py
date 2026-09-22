@@ -83,6 +83,18 @@ def run_onnx_inference(model_path: str, inputs: list[np.ndarray]) -> list[np.nda
     import onnxruntime as ort
 
     session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
-    input_name = session.get_inputs()[0].name
+    input_meta = session.get_inputs()[0]
+    input_name = input_meta.name
     output_name = session.get_outputs()[0].name
-    return [session.run([output_name], {input_name: sample})[0] for sample in inputs]
+    expected_shape = [d if isinstance(d, int) and d > 0 else 1 for d in input_meta.shape]
+
+    adapted_inputs = []
+    for sample in inputs:
+        if list(sample.shape) != expected_shape and len(sample.shape) == 4 and len(expected_shape) == 4:
+            if list(sample.transpose(0, 3, 1, 2).shape) == expected_shape:
+                sample = sample.transpose(0, 3, 1, 2)
+            elif list(sample.transpose(0, 2, 3, 1).shape) == expected_shape:
+                sample = sample.transpose(0, 2, 3, 1)
+        adapted_inputs.append(sample)
+
+    return [session.run([output_name], {input_name: sample})[0] for sample in adapted_inputs]
