@@ -1,6 +1,7 @@
 FROM node:22-slim AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
+# .npmrc carries legacy-peer-deps=true (react-hook-form vs @hookform/resolvers); without it npm ci fails.
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci
 
 FROM node:22-slim AS builder
