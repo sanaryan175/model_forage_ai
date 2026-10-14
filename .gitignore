@@ -38,6 +38,7 @@ ml/data/
 # The trained model + its ONNX export are shared with the team through git.
 !ml/checkpoints/*.pth
 !ml/checkpoints/*.onnx
+!ml/checkpoints/*.pt
 
 # Storage / uploads / logs (local mock mode writes here)
 /storage/
