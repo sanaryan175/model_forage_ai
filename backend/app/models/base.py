@@ -2,8 +2,8 @@ import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import DateTime
-from sqlalchemy.types import TypeDecorator
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import TypeDecorator
 
 
 def new_uuid() -> str:

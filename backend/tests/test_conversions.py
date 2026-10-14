@@ -1,5 +1,8 @@
 import time
 
+import pytest
+
+from app.converters.registry import get_converter
 from tests.factories import make_valid_onnx_bytes
 
 
@@ -144,6 +147,8 @@ def test_onnx_baseline_is_added_once_per_model_and_benchmarked(client, auth_head
     assert baseline["created_at"].endswith(("Z", "+00:00"))
 
 
+# Without TensorFlow (e.g. CI, which installs only requirements.txt) the job fails earlier with "not installed".
+@pytest.mark.skipif(not get_converter("tflite").is_supported()[0], reason="needs tensorflow + onnx2tf")
 def test_unapplied_optimization_fails_instead_of_mislabelling(client, auth_headers):
     model = _upload_ready_model(client, auth_headers)
     jobs = client.post(

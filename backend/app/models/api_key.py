@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from app.models.base import UTCDateTime, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.base import TimestampMixin, UTCDateTime, UUIDPrimaryKeyMixin
 
 
 class ApiKey(Base, UUIDPrimaryKeyMixin, TimestampMixin):

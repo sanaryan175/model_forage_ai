@@ -5,7 +5,7 @@ from sqlalchemy import Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from app.models.base import UTCDateTime, TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.base import TimestampMixin, UTCDateTime, UUIDPrimaryKeyMixin
 
 
 class TargetFormat(str, enum.Enum):
