@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   BarChart3,
   Boxes,
   GitCompareArrows,
   LayoutDashboard,
+  LogOut,
   Package,
   Settings,
   Workflow,
   Zap,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -28,6 +30,8 @@ const NAV_ITEMS = [
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
 
   return (
     <div className="flex h-full flex-col">
@@ -59,10 +63,18 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
       <div className="border-t border-border p-3">
-        <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-[11px] text-muted-foreground">
-          <span className="font-mono text-primary">AWS_MODE=mock</span>
-          <p className="mt-0.5">Running in local development mode</p>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate?.();
+            logout();
+            router.push("/login");
+          }}
+          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="size-4" />
+          Log out
+        </button>
       </div>
     </div>
   );

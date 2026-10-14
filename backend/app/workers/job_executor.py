@@ -33,18 +33,16 @@ class LocalJobExecutor(JobExecutor):
 
 
 class AWSJobExecutor(JobExecutor):
-    """Publishes the job onto the format-specific SQS queue; EventBridge + Lambda + ECS
-    (see infrastructure/aws) pick it up and run the same `run_conversion_job` pipeline
-    inside a container image built from workers/Dockerfile.<format>.
+    """Publishes the job to SQS: TensorRT jobs go to the queue the laptop GPU worker polls,
+    everything else to the queue the ECS Fargate CPU worker polls. Both run the same
+    `run_conversion_job` pipeline.
     """
 
     def __init__(self, queue: QueueProvider):
         self.queue = queue
-        self._queue_name_by_format = {
-            "tflite": get_settings().sqs_tflite_queue,
-            "tensorrt": get_settings().sqs_tensorrt_queue,
-            "coreml": get_settings().sqs_coreml_queue,
-        }
+        settings = get_settings()
+        self._tensorrt_queue = settings.sqs_tensorrt_queue
+        self._cpu_queue = settings.sqs_cpu_queue  # tflite, onnx baseline, coreml (reports "needs macOS")
 
     def submit(self, job_id: str) -> None:
         from app.database import SessionLocal
@@ -53,14 +51,14 @@ class AWSJobExecutor(JobExecutor):
         db = SessionLocal()
         try:
             job = db.get(ConversionJob, job_id)
-            queue_name = self._queue_name_by_format[job.target_format.value]
+            queue_name = self._tensorrt_queue if job.target_format.value == "tensorrt" else self._cpu_queue
         finally:
             db.close()
         self.queue.publish(queue_name, {"job_id": job_id})
 
     def cancel(self, job_id: str) -> None:
-        # Production cancellation stops the ECS task via the AWS API; documented in
-        # infrastructure/aws/README.md. Marking CANCELLED here is handled by the API layer.
+        # Nothing to signal: the API marks the job CANCELLED in the shared database, and the
+        # worker checks that status before every stage (see conversion_worker.advance).
         pass
 
 

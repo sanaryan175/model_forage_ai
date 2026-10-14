@@ -3,7 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ArrowLeft, RotateCw, XCircle } from "lucide-react";
+import { ArrowLeft, Download, RotateCw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/common/error-state";
@@ -17,8 +17,9 @@ import {
   useConversionStream,
   useRetryConversion,
 } from "@/hooks/use-conversions";
-import { formatDate, formatDuration } from "@/lib/format";
-import { apiErrorMessage } from "@/lib/api-client";
+import { formatDate, formatDuration, formatTarget } from "@/lib/format";
+import { useArtifacts } from "@/hooks/use-artifacts";
+import { apiErrorMessage, downloadArtifact } from "@/lib/api-client";
 
 const ACTIVE_STATUSES = ["queued", "validating", "converting", "optimizing", "benchmarking"];
 
@@ -30,6 +31,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
   const { data: logs = [] } = useConversionLogs(jobId, isActive);
   const cancelJob = useCancelConversion();
   const retryJob = useRetryConversion();
+  const { data: artifacts } = useArtifacts();
+  const artifact = artifacts?.items.find((a) => a.job_id === jobId);
 
   if (isLoading) {
     return (
@@ -72,11 +75,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-            <span className="font-mono uppercase">{job.target_format}</span> Conversion
+            <span className="font-mono uppercase">{formatTarget(job.target_format)}</span> Conversion
           </h1>
           <p className="font-mono text-xs text-muted-foreground">{job.id}</p>
         </div>
         <div className="flex gap-2">
+          {artifact && (
+            <Button onClick={() => downloadArtifact(artifact).catch((e) => toast.error(apiErrorMessage(e, "Download failed")))}>
+              <Download className="size-4" />
+              Download
+            </Button>
+          )}
           {isActive && (
             <Button variant="outline" onClick={handleCancel} disabled={cancelJob.isPending}>
               <XCircle className="size-4" />

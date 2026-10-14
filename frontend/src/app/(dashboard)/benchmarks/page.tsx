@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBenchmarks } from "@/hooks/use-benchmarks";
-import { formatBytes, formatMs, formatPct } from "@/lib/format";
+import { formatBytes, formatMs, formatPct, formatTarget } from "@/lib/format";
 
 const chartTooltipStyle = {
   background: "var(--color-surface-2)",
@@ -32,7 +32,7 @@ export default function BenchmarksPage() {
   }
 
   const chartData = data.items.map((b) => ({
-    name: `${b.model_name} / ${b.target_format.toUpperCase()}`,
+    name: `${b.model_name} / ${formatTarget(b.target_format)}`,
     latency: b.latency_mean_ms,
     size: b.model_size_bytes ? b.model_size_bytes / (1024 * 1024) : null,
   }));
@@ -41,7 +41,7 @@ export default function BenchmarksPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Benchmarks</h1>
-        <p className="text-sm text-muted-foreground">Latency, size, accuracy and memory for every conversion.</p>
+        <p className="text-sm text-muted-foreground">Latency, size and fidelity (top-1 agreement with the original ONNX model) for every conversion.</p>
       </div>
 
       {data.items.length === 0 ? (
@@ -78,21 +78,19 @@ export default function BenchmarksPage() {
                   <TableHead>Optimization</TableHead>
                   <TableHead>Size</TableHead>
                   <TableHead>Latency</TableHead>
-                  <TableHead>Accuracy</TableHead>
-                  <TableHead>Memory</TableHead>
+                  <TableHead>Fidelity vs ONNX</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.items.map((b) => (
                   <TableRow key={b.id}>
                     <TableCell className="font-medium">{b.model_name}</TableCell>
-                    <TableCell className="font-mono uppercase">{b.target_format}</TableCell>
+                    <TableCell className="font-mono uppercase">{formatTarget(b.target_format)}</TableCell>
                     <TableCell className="font-mono uppercase text-muted-foreground">{b.optimization}</TableCell>
                     <TableCell className="font-mono tabular-nums">{formatBytes(b.model_size_bytes)}</TableCell>
                     <TableCell className="font-mono tabular-nums">{formatMs(b.latency_mean_ms)}</TableCell>
-                    <TableCell className="font-mono tabular-nums">{formatPct(b.accuracy_pct)}</TableCell>
                     <TableCell className="font-mono tabular-nums">
-                      {b.memory_usage_mb ? `${b.memory_usage_mb.toFixed(1)} MB` : "N/A"}
+                      {b.target_format === "onnx" ? "baseline" : formatPct(b.fidelity_pct)}
                     </TableCell>
                   </TableRow>
                 ))}

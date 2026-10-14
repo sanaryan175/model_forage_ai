@@ -47,42 +47,17 @@ services:
     depends_on:
       - backend
 
-  # ── Production-topology workers ─────────────────────────────
-  # Not needed for local AWS_MODE=mock (the backend runs conversions in-process via
-  # LocalJobExecutor). Start these to exercise the same distributed shape used in
-  # production ECS: `docker compose --profile aws up`.
-  tflite-worker:
+  # ── AWS CPU worker (same image ECS runs) ────────────────────
+  # Not needed for local AWS_MODE=mock (the backend runs conversions in-process).
+  # Runs the ECS worker image locally against the real S3/SQS/RDS from backend/.env.aws:
+  #   docker compose --profile aws up cpu-worker
+  # TensorRT has no container: it runs natively on the GPU laptop (workers/tensorrt_worker.py).
+  cpu-worker:
     profiles: ["aws"]
     build:
       context: .
-      dockerfile: infrastructure/docker/tflite-worker.Dockerfile
-    env_file: .env
-    environment:
-      AWS_MODE: aws
-    depends_on:
-      - postgres
-
-  tensorrt-worker:
-    profiles: ["aws"]
-    build:
-      context: .
-      dockerfile: infrastructure/docker/tensorrt-worker.Dockerfile
-    env_file: .env
-    environment:
-      AWS_MODE: aws
-    depends_on:
-      - postgres
-
-  coreml-worker:
-    profiles: ["aws"]
-    build:
-      context: .
-      dockerfile: infrastructure/docker/coreml-worker.Dockerfile
-    env_file: .env
-    environment:
-      AWS_MODE: aws
-    depends_on:
-      - postgres
+      dockerfile: infrastructure/docker/cpu-worker.Dockerfile
+    env_file: backend/.env.aws
 
 volumes:
   pgdata:

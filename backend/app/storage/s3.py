@@ -2,7 +2,6 @@ import tempfile
 from pathlib import Path
 from typing import BinaryIO
 
-import boto3
 from botocore.exceptions import ClientError
 
 from app.storage.base import StorageProvider
@@ -11,9 +10,9 @@ from app.storage.base import StorageProvider
 class S3StorageProvider(StorageProvider):
     """Production storage provider backed by Amazon S3."""
 
-    def __init__(self, bucket: str, region: str):
+    def __init__(self, bucket: str, client):
         self.bucket = bucket
-        self.client = boto3.client("s3", region_name=region)
+        self.client = client
         self._tmp_dir = Path(tempfile.gettempdir()) / "modelforge-s3-cache"
         self._tmp_dir.mkdir(parents=True, exist_ok=True)
 
@@ -43,10 +42,3 @@ class S3StorageProvider(StorageProvider):
 
     def size(self, key: str) -> int:
         return self.client.head_object(Bucket=self.bucket, Key=key)["ContentLength"]
-
-    def get_download_url(self, key: str, expires_in: int = 3600) -> str:
-        return self.client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": self.bucket, "Key": key},
-            ExpiresIn=expires_in,
-        )

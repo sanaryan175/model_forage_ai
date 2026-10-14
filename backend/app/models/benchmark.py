@@ -17,8 +17,7 @@ class Benchmark(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     latency_median_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     latency_p95_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     throughput_ips: Mapped[float | None] = mapped_column(Float, nullable=True)
-    accuracy_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
-    memory_usage_mb: Mapped[float | None] = mapped_column(Float, nullable=True)
+    fidelity_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
     benchmark_device: Mapped[str] = mapped_column(String(100), default="cpu")
     unsupported_metrics: Mapped[str | None] = mapped_column(
         String(500), nullable=True, doc="Comma-separated metrics unavailable in this environment (shown as N/A)"

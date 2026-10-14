@@ -22,6 +22,11 @@ export function formatThroughput(ips: number | null | undefined): string {
   return `${ips.toFixed(1)} inf/s`;
 }
 
+/** "onnx" jobs are the auto-added reference run, not a conversion the user asked for. */
+export function formatTarget(format: string): string {
+  return format === "onnx" ? "ONNX baseline" : format.toUpperCase();
+}
+
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleString(undefined, {

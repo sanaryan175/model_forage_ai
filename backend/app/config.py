@@ -1,10 +1,17 @@
+import os
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+_BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # ENV_FILE picks the config: ".env" (local mock mode, default) or ".env.aws" (S3/SQS/RDS).
+    # Resolved against backend/, so workers started from any folder read the same file.
+    model_config = SettingsConfigDict(env_file=_BACKEND_DIR / os.getenv("ENV_FILE", ".env"), extra="ignore")
 
     app_env: str = "development"
     aws_mode: str = "mock"  # "mock" | "aws"
@@ -23,12 +30,11 @@ class Settings(BaseSettings):
     local_storage_root: str = "./storage"
 
     aws_region: str = "ap-south-1"
-    aws_access_key_id: str = ""
-    aws_secret_access_key: str = ""
+    # Laptop: the `aws configure --profile` name. ECS: leave empty, the task role provides credentials.
+    aws_profile: str = ""
     s3_bucket: str = "modelforge-models"
-    sqs_tflite_queue: str = "modelforge-tflite"
-    sqs_tensorrt_queue: str = "modelforge-tensorrt"
-    sqs_coreml_queue: str = "modelforge-coreml"
+    sqs_cpu_queue: str = "modelforge-cpu"  # TFLite, ONNX baseline, Core ML
+    sqs_tensorrt_queue: str = "modelforge-tensorrt"  # laptop GPU worker
     ecr_repository: str = "modelforge"
 
     max_upload_size_mb: int = 512
@@ -36,6 +42,11 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    def boto3_session(self):
+        import boto3
+
+        return boto3.Session(profile_name=self.aws_profile or None, region_name=self.aws_region)
 
     @property
     def is_mock_mode(self) -> bool:

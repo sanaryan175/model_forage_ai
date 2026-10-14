@@ -13,4 +13,4 @@ def get_queue_provider() -> QueueProvider:
 
     from app.queue.sqs import SQSQueueProvider
 
-    return SQSQueueProvider(region=settings.aws_region)
+    return SQSQueueProvider(client=settings.boto3_session().client("sqs"))

@@ -13,4 +13,4 @@ def get_storage_provider() -> StorageProvider:
 
     from app.storage.s3 import S3StorageProvider
 
-    return S3StorageProvider(bucket=settings.s3_bucket, region=settings.aws_region)
+    return S3StorageProvider(bucket=settings.s3_bucket, client=settings.boto3_session().client("s3"))

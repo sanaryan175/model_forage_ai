@@ -1,17 +1,18 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from app.models.base import TimestampMixin, UUIDPrimaryKeyMixin
+from app.models.base import UTCDateTime, TimestampMixin, UUIDPrimaryKeyMixin
 
 
 class TargetFormat(str, enum.Enum):
     TFLITE = "tflite"
     TENSORRT = "tensorrt"
     COREML = "coreml"
+    ONNX = "onnx"  # baseline: the original model under ONNX Runtime, for comparison
 
 
 class OptimizationType(str, enum.Enum):
@@ -46,8 +47,8 @@ class ConversionJob(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         String(255), nullable=True, doc="Comma-separated dims, required to export PyTorch (.pt) models to ONNX"
     )
 
-    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     error_message: Mapped[str | None] = mapped_column(String(4000), nullable=True)
 
     model: Mapped["Model"] = relationship(back_populates="conversion_jobs")  # noqa: F821

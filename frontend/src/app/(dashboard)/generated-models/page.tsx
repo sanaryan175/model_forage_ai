@@ -8,12 +8,14 @@ import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArtifacts } from "@/hooks/use-artifacts";
 import { formatBytes, formatDate } from "@/lib/format";
-import { API_URL } from "@/lib/api-client";
+import { toast } from "sonner";
+import { apiErrorMessage, downloadArtifact } from "@/lib/api-client";
 
 const EXTENSION_BY_FORMAT: Record<string, string> = {
   tflite: ".tflite",
   tensorrt: ".engine",
   coreml: ".mlmodel",
+  onnx: ".onnx",
 };
 
 export default function GeneratedModelsPage() {
@@ -63,8 +65,7 @@ export default function GeneratedModelsPage() {
                       variant="ghost"
                       size="icon"
                       className="size-7"
-                      nativeButton={false}
-                      render={<a href={`${API_URL}/api/artifacts/${artifact.id}/download`} />}
+                      onClick={() => downloadArtifact(artifact).catch((e) => toast.error(apiErrorMessage(e, "Download failed")))}
                     >
                       <Download className="size-4" />
                     </Button>

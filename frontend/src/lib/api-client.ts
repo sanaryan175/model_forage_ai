@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -42,10 +43,36 @@ apiClient.interceptors.response.use(
   },
 );
 
+// Plain <a href> links can't send the bearer token, so fetch the file through apiClient and save the blob.
+// The API first fetches the file from S3, so a big model takes a few seconds: show progress meanwhile.
+// On failure the toast is dismissed and the error re-thrown, so callers keep showing the reason.
+export async function downloadArtifact(artifact: { id: string; file_path: string }): Promise<void> {
+  const filename = artifact.file_path.split("/").pop() ?? artifact.id;
+  const toastId = toast.loading(`Preparing download: ${filename}`);
+  try {
+    const { data } = await apiClient.get<Blob>(`/api/artifacts/${artifact.id}/download`, { responseType: "blob" });
+    const url = URL.createObjectURL(data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Download started: ${filename}`, { id: toastId });
+  } catch (error) {
+    toast.dismiss(toastId);
+    throw error;
+  }
+}
+
 export function apiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
   if (axios.isAxiosError(error)) {
     const detail = error.response?.data?.detail;
     if (typeof detail === "string") return detail;
+    // FastAPI validation errors (422) are a list: [{ loc: ["body", "email"], msg: "..." }, ...]
+    if (Array.isArray(detail) && detail[0]?.msg) {
+      const field = detail[0].loc?.at(-1);
+      return field ? `${field}: ${detail[0].msg}` : detail[0].msg;
+    }
     if (error.message) return error.message;
   }
   return fallback;

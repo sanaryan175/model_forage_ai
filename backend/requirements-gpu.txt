@@ -1,0 +1,4 @@
+# TensorRT pipeline: only on a machine with an NVIDIA GPU + driver (the laptop GPU worker).
+# The wheels bundle the CUDA libraries, so no CUDA Toolkit/cuDNN install is needed.
+tensorrt==11.3.0.99
+cuda-python==13.4.1

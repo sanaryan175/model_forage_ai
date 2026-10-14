@@ -99,6 +99,9 @@ export function ConversionConfigDialog({
                 </label>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground">
+              The original model is also benchmarked once under ONNX Runtime as the comparison baseline.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -106,8 +109,9 @@ export function ConversionConfigDialog({
             <RadioGroup value={optimization} onValueChange={(v) => setOptimization(v as OptimizationType)}>
               {(["fp32", "fp16", "int8"] as const).map((opt) => (
                 <label key={opt} className="flex items-center gap-2 text-sm">
-                  <RadioGroupItem value={opt} />
+                  <RadioGroupItem value={opt} disabled={opt === "int8"} />
                   {opt.toUpperCase()}
+                  {opt === "int8" && <span className="text-xs text-muted-foreground">(needs calibration data, not supported yet)</span>}
                 </label>
               ))}
             </RadioGroup>

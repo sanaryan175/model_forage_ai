@@ -9,5 +9,7 @@ export function useArtifacts() {
       const { data } = await apiClient.get<{ items: ArtifactRecord[]; total: number }>("/api/artifacts");
       return data;
     },
+    // Jobs can finish while the user is on another page, so never show a cached list on open.
+    refetchOnMount: "always",
   });
 }

@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useDashboard } from "@/hooks/use-dashboard";
-import { formatBytes, formatDate, formatMs } from "@/lib/format";
+import { formatBytes, formatDate, formatMs, formatTarget } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 
 const FORMAT_COLORS: Record<string, string> = {
@@ -80,7 +80,7 @@ export default function DashboardPage() {
                   <TableRow key={job.id} className="cursor-pointer">
                     <TableCell>
                       <Link href={`/conversions/${job.id}`} className="block font-mono uppercase">
-                        {job.target_format}
+                        {formatTarget(job.target_format)}
                       </Link>
                     </TableCell>
                     <TableCell className="font-mono uppercase text-muted-foreground">{job.optimization}</TableCell>

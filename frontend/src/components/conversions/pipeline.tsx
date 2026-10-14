@@ -23,8 +23,9 @@ export function ConversionPipeline({ status }: { status: JobStatus }) {
   return (
     <div className="flex items-center overflow-x-auto py-2">
       {STAGES.map((stage, index) => {
-        const isDone = !terminalFailure && index < currentIndex;
-        const isCurrent = !terminalFailure && index === currentIndex;
+        // A completed job has no "current" stage left, so every step (including "Completed") is done.
+        const isDone = !terminalFailure && (index < currentIndex || status === "completed");
+        const isCurrent = !terminalFailure && !isDone && index === currentIndex;
         const isLast = index === STAGES.length - 1;
 
         return (

@@ -1,0 +1,13 @@
+# Build context for infrastructure/docker/*.Dockerfile (built from the repo root).
+# Only backend/ and workers/ are needed; never send the venv, models or secrets.
+*
+!backend/
+!workers/
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+backend/.env
+backend/.env.*
+backend/storage
+backend/*.db
+backend/test_storage

@@ -16,8 +16,7 @@ class BenchmarkResponse(BaseModel):
     latency_median_ms: float | None = None
     latency_p95_ms: float | None = None
     throughput_ips: float | None = None
-    accuracy_pct: float | None = None
-    memory_usage_mb: float | None = None
+    fidelity_pct: float | None = None
     benchmark_device: str
     unsupported_metrics: str | None = None
     created_at: datetime
@@ -44,5 +43,5 @@ class ComparisonResponse(BaseModel):
     rows: list[ComparisonRow]
     best_latency_job_id: str | None = None
     smallest_size_job_id: str | None = None
-    highest_accuracy_job_id: str | None = None
+    highest_fidelity_job_id: str | None = None
     best_overall_job_id: str | None = None

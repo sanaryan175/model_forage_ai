@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt requirements-ml.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ML deps (torch/tensorflow/onnx2tf/coremltools) are heavy; installed in a separate layer
+# ML deps (torch/tensorflow/onnx2tf) are heavy; installed in a separate layer
 # so application code changes don't invalidate this cache.
 ARG INSTALL_ML_DEPS=true
 RUN if [ "$INSTALL_ML_DEPS" = "true" ]; then pip install --no-cache-dir -r requirements-ml.txt; fi

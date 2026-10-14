@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useConversions } from "@/hooks/use-conversions";
-import { formatDate, formatDuration } from "@/lib/format";
+import { formatDate, formatDuration, formatTarget } from "@/lib/format";
 
 export default function ConversionsPage() {
   const { data, isLoading, isError, refetch } = useConversions();
@@ -47,7 +47,7 @@ export default function ConversionsPage() {
             <TableBody>
               {data.items.map((job) => (
                 <TableRow key={job.id} className="cursor-pointer" onClick={() => router.push(`/conversions/${job.id}`)}>
-                  <TableCell className="font-mono uppercase">{job.target_format}</TableCell>
+                  <TableCell className="font-mono uppercase">{formatTarget(job.target_format)}</TableCell>
                   <TableCell className="font-mono uppercase text-muted-foreground">{job.optimization}</TableCell>
                   <TableCell className="w-32">
                     <Progress value={job.progress} className="h-1.5" />

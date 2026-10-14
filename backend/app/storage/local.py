@@ -43,7 +43,3 @@ class LocalStorageProvider(StorageProvider):
 
     def size(self, key: str) -> int:
         return self._path(key).stat().st_size
-
-    def get_download_url(self, key: str, expires_in: int = 3600) -> str:
-        # In mock mode, downloads are proxied through the API's own artifact-download route.
-        return f"/api/artifacts/download-local?key={key}"

@@ -1,5 +1,6 @@
 from app.converters.base import ModelConverter
 from app.converters.coreml import CoreMLConverter
+from app.converters.onnx_baseline import OnnxBaselineConverter
 from app.converters.tensorrt import TensorRTConverter
 from app.converters.tflite import TFLiteConverter
 
@@ -7,6 +8,7 @@ _REGISTRY: dict[str, type[ModelConverter]] = {
     "tflite": TFLiteConverter,
     "tensorrt": TensorRTConverter,
     "coreml": CoreMLConverter,
+    "onnx": OnnxBaselineConverter,
 }
 
 

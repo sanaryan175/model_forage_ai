@@ -20,8 +20,8 @@ class BenchmarkService:
 
     def compare(self, job_ids: list[str], user_id: str) -> dict:
         rows = []
-        best_latency, smallest_size, highest_accuracy = None, None, None
-        best_latency_val, smallest_size_val, highest_accuracy_val = None, None, None
+        best_latency, smallest_size, highest_fidelity = None, None, None
+        best_latency_val, smallest_size_val, highest_fidelity_val = None, None, None
 
         for job_id in job_ids:
             job: ConversionJob | None = self.jobs.get_by_id(job_id)
@@ -47,22 +47,22 @@ class BenchmarkService:
                 smallest_size_val is None or benchmark.model_size_bytes < smallest_size_val
             ):
                 smallest_size_val, smallest_size = benchmark.model_size_bytes, job_id
-            if benchmark.accuracy_pct is not None and (
-                highest_accuracy_val is None or benchmark.accuracy_pct > highest_accuracy_val
+            if benchmark.fidelity_pct is not None and (
+                highest_fidelity_val is None or benchmark.fidelity_pct > highest_fidelity_val
             ):
-                highest_accuracy_val, highest_accuracy = benchmark.accuracy_pct, job_id
+                highest_fidelity_val, highest_fidelity = benchmark.fidelity_pct, job_id
 
         # "Best overall" favors the job that wins the most metrics; ties broken by latency.
         scores: dict[str, int] = {}
-        for winner in (best_latency, smallest_size, highest_accuracy):
+        for winner in (best_latency, smallest_size, highest_fidelity):
             if winner:
                 scores[winner] = scores.get(winner, 0) + 1
-        best_overall = max(scores, key=lambda k: (scores[k], -1)) if scores else best_latency
+        best_overall = max(scores, key=lambda k: (scores[k], k == best_latency)) if scores else best_latency
 
         return {
             "rows": rows,
             "best_latency_job_id": best_latency,
             "smallest_size_job_id": smallest_size,
-            "highest_accuracy_job_id": highest_accuracy,
+            "highest_fidelity_job_id": highest_fidelity,
             "best_overall_job_id": best_overall,
         }

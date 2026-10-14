@@ -38,25 +38,11 @@ def timed_inference_stats(run_once: Callable[[], None], iterations: int = 50, wa
     }
 
 
-def measure_process_memory_mb(run_once: Callable[[], None]) -> float | None:
-    """Best-effort resident memory delta while running `run_once`, using psutil if installed."""
-    try:
-        import psutil
-    except ImportError:
-        return None
-
-    process = psutil.Process(os.getpid())
-    before = process.memory_info().rss
-    run_once()
-    after = process.memory_info().rss
-    return max(after - before, 0) / (1024 * 1024)
-
 
 def top1_agreement_pct(reference_outputs: list[np.ndarray], candidate_outputs: list[np.ndarray]) -> float:
     """Fidelity metric: % of samples where the converted model's top-1 class matches the
-    original ONNX model's top-1 class on the same synthetic inputs. This is the
-    "compare original model and converted model" accuracy check from the spec, and
-    does not require ground-truth labels.
+    original ONNX model's top-1 class on the same synthetic inputs. It shows whether the
+    conversion preserved the model's behaviour; it is NOT task accuracy (no labels here).
     """
     if not reference_outputs or len(reference_outputs) != len(candidate_outputs):
         return 0.0

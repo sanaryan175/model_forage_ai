@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -33,7 +33,6 @@ def download_artifact(artifact_id: str, current_user: User = Depends(get_current
     if not storage.exists(artifact.file_path):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artifact file is missing from storage")
 
-    url = storage.get_download_url(artifact.file_path)
-    if url.startswith("/api/"):
-        return FileResponse(storage.open_path(artifact.file_path), filename=artifact.file_path.split("/")[-1])
-    return RedirectResponse(url)
+    # Always stream through the API (S3 files are fetched to a temp file first). A redirect to a
+    # presigned S3 URL would break the frontend's authenticated fetch (cross-origin, no CORS).
+    return FileResponse(storage.open_path(artifact.file_path), filename=artifact.file_path.split("/")[-1])

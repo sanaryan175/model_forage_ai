@@ -1,11 +1,11 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String
+from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from app.models.base import UUIDPrimaryKeyMixin, utcnow
+from app.models.base import UTCDateTime, UUIDPrimaryKeyMixin, utcnow
 
 
 class LogLevel(str, enum.Enum):
@@ -23,6 +23,6 @@ class JobLog(Base, UUIDPrimaryKeyMixin):
     )
     level: Mapped[LogLevel] = mapped_column(Enum(LogLevel), default=LogLevel.INFO, nullable=False)
     message: Mapped[str] = mapped_column(String(4000), nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False, index=True)
+    timestamp: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, nullable=False, index=True)
 
     job: Mapped["ConversionJob"] = relationship(back_populates="logs")  # noqa: F821

@@ -19,7 +19,7 @@ export interface ModelRecord {
   updated_at: string;
 }
 
-export type TargetFormat = "tflite" | "tensorrt" | "coreml";
+export type TargetFormat = "tflite" | "tensorrt" | "coreml" | "onnx";
 export type OptimizationType = "fp32" | "fp16" | "int8";
 export type JobStatus =
   | "queued"
@@ -65,8 +65,7 @@ export interface Benchmark {
   latency_median_ms: number | null;
   latency_p95_ms: number | null;
   throughput_ips: number | null;
-  accuracy_pct: number | null;
-  memory_usage_mb: number | null;
+  fidelity_pct: number | null;
   benchmark_device: string;
   unsupported_metrics: string | null;
   created_at: string;
@@ -84,7 +83,7 @@ export interface ComparisonResult {
   rows: ComparisonRow[];
   best_latency_job_id: string | null;
   smallest_size_job_id: string | null;
-  highest_accuracy_job_id: string | null;
+  highest_fidelity_job_id: string | null;
   best_overall_job_id: string | null;
 }
 

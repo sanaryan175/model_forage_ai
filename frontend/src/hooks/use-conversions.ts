@@ -115,6 +115,7 @@ export function useConversionStream(jobId: string | undefined) {
         source.close();
         queryClient.invalidateQueries({ queryKey: ["dashboard"] });
         queryClient.invalidateQueries({ queryKey: ["benchmarks"] });
+        queryClient.invalidateQueries({ queryKey: ["artifacts"] });
       }
     };
     source.onerror = () => source.close();

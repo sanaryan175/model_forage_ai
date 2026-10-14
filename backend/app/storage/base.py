@@ -28,7 +28,3 @@ class StorageProvider(ABC):
     @abstractmethod
     def size(self, key: str) -> int:
         """Return the size in bytes of the object at `key`."""
-
-    @abstractmethod
-    def get_download_url(self, key: str, expires_in: int = 3600) -> str:
-        """Return a URL the client can use to download the object (signed URL in production)."""

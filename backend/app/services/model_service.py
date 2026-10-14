@@ -105,5 +105,8 @@ class ModelService:
         return self.repo.list_for_user(user_id, search=search, limit=limit, offset=offset)
 
     def delete(self, model: Model) -> None:
+        for job in model.conversion_jobs:
+            for artifact in job.artifacts:
+                self.storage.delete(artifact.file_path)
         self.storage.delete(model.storage_path)
         self.repo.delete(model)

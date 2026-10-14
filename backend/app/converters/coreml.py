@@ -10,8 +10,7 @@ _ALL_METRICS = [
     "latency_median_ms",
     "latency_p95_ms",
     "throughput_ips",
-    "accuracy_pct",
-    "memory_usage_mb",
+    "fidelity_pct",
 ]
 
 

@@ -4,7 +4,6 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-import boto3
 import structlog
 
 from app.queue.base import QueueProvider
@@ -13,13 +12,13 @@ logger = structlog.get_logger(__name__)
 
 
 class SQSQueueProvider(QueueProvider):
-    """Production queue provider backed by Amazon SQS. Queue URLs are resolved by name
-    via `get_queue_url`, and messages are expected to arrive via EventBridge rules that
-    route S3 ObjectCreated events to the tflite/tensorrt/coreml queues.
+    """Production queue provider backed by Amazon SQS. The API publishes {"job_id": ...}
+    when a user starts a conversion; workers poll their queue (resolved by name). A message
+    whose handler crashes is retried, then moved to the queue's DLQ after 3 attempts.
     """
 
-    def __init__(self, region: str):
-        self.client = boto3.client("sqs", region_name=region)
+    def __init__(self, client):
+        self.client = client
         self._url_cache: dict[str, str] = {}
 
     def _queue_url(self, queue_name: str) -> str:

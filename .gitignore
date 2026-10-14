@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # Node / frontend
 node_modules/
@@ -34,7 +35,9 @@ htmlcov/
 *.mlmodel
 *.mlpackage
 ml/data/
-ml/checkpoints/
+# The trained model + its ONNX export are shared with the team through git.
+!ml/checkpoints/*.pth
+!ml/checkpoints/*.onnx
 
 # Storage / uploads / logs (local mock mode writes here)
 /storage/
@@ -59,3 +62,6 @@ infrastructure/terraform/.terraform/
 infrastructure/terraform/*.tfstate
 infrastructure/terraform/*.tfstate.*
 infrastructure/terraform/*.tfvars
+# Plan files contain every variable value in plain text, including db_password
+infrastructure/terraform/tfplan
+infrastructure/terraform/*.tfplan

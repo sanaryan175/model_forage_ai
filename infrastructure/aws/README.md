@@ -1,77 +1,91 @@
-# AWS Production Architecture
+# AWS Architecture
 
-This directory documents the production topology that `AWS_MODE=aws` targets. The
-Terraform in `infrastructure/terraform/` provisions it; **nothing here is applied
-automatically** — running `terraform apply` creates billable AWS resources and must be
-a deliberate, reviewed action.
+`AWS_MODE=aws` runs ModelForge against real AWS services. The Terraform in
+`infrastructure/terraform/` creates them. It is sized for a $100 student credit, so
+there is no NAT gateway, no load balancer and no cloud GPU.
 
 ```mermaid
-flowchart TD
-    U[User] --> FE[Frontend - ECS/CloudFront]
-    FE --> API[Backend API - ECS Fargate]
-    API --> S3[(S3: model bucket)]
-    API --> RDS[(RDS PostgreSQL)]
-    S3 -- ObjectCreated --> EB[EventBridge rule]
-    EB --> Q1[SQS: modelforge-tflite]
-    EB --> Q2[SQS: modelforge-tensorrt]
-    EB --> Q3[SQS: modelforge-coreml]
-    Q1 --> W1[ECS Fargate: tflite-worker]
-    Q2 --> W2[ECS EC2+GPU: tensorrt-worker]
-    Q3 --> W3[ECS Fargate: coreml-worker]
-    W1 --> S3
-    W2 --> S3
-    W3 --> S3
-    W1 --> RDS
-    W2 --> RDS
-    W3 --> RDS
-    Q1 -.failed x3.-> D1[[DLQ]]
-    Q2 -.failed x3.-> D2[[DLQ]]
-    Q3 -.failed x3.-> D3[[DLQ]]
-    API -.logs.-> CW[CloudWatch Logs]
-    W1 -.logs.-> CW
-    W2 -.logs.-> CW
-    W3 -.logs.-> CW
+flowchart LR
+    subgraph Laptop
+        FE[Frontend :3000] --> API[FastAPI :8000]
+        GPU[TensorRT worker<br/>RTX GPU]
+    end
+    subgraph AWS ap-south-1
+        S3[(S3 bucket<br/>models + artifacts)]
+        QC[SQS modelforge-cpu]
+        QT[SQS modelforge-tensorrt]
+        DLQ[[DLQs]]
+        W[ECS Fargate<br/>CPU worker]
+        RDS[(RDS PostgreSQL)]
+        CW[CloudWatch Logs]
+    end
+    API -- upload / download --> S3
+    API -- job_id --> QC
+    API -- job_id --> QT
+    API --> RDS
+    QC --> W
+    QT --> GPU
+    W --> S3
+    W --> RDS
+    GPU --> S3
+    GPU --> RDS
+    QC -.3 failures.-> DLQ
+    QT -.3 failures.-> DLQ
+    W -.logs.-> CW
 ```
 
-## Why EventBridge sits between S3 and SQS
+## How a conversion flows
 
-Routing through an EventBridge rule (rather than S3 → SQS notifications directly) is
-what lets all three format queues subscribe to the same `ObjectCreated` event
-independently, and lets new formats be added later as pure additive EventBridge targets
-with no change to the upload path.
+1. The user uploads a model: the API stores it in S3 and records it in RDS.
+2. The user clicks Convert: the API creates one job row per format and sends
+   `{"job_id": ...}` to SQS. TensorRT jobs go to `modelforge-tensorrt`, everything else
+   (TFLite, ONNX baseline, Core ML) to `modelforge-cpu`.
+3. A worker receives the message, downloads the model from S3, converts and benchmarks
+   it, uploads the result to S3 and writes status, logs and benchmark rows to RDS.
+4. The frontend polls the API, which reads RDS; downloads stream through the API from S3.
 
-## Component notes
+Every worker runs the same pipeline (`backend/app/workers/conversion_worker.py`) as
+local mock mode, one job at a time. Cancel works across machines: the API marks the job
+CANCELLED in RDS and the worker checks that before every stage.
 
-| Component | Purpose | Key file |
+## Resources and cost
+
+| Resource | Purpose | Cost |
 |---|---|---|
-| S3 bucket | `models/{user_id}/{model_id}/{original,onnx,converted,benchmarks,logs}/` | `main.tf` |
-| EventBridge rule | Matches `models/**/onnx/model.onnx` uploads | `main.tf` |
-| SQS + DLQ (×3) | One isolated queue per format; 3 retries before DLQ | `modules/queue_with_dlq` |
-| ECS Fargate (backend, tflite, coreml) | CPU-only workloads | `ecs.tf` |
-| ECS EC2 + GPU capacity provider | TensorRT builds require an NVIDIA GPU | `ecs.tf` |
-| RDS PostgreSQL | Jobs, models, benchmarks, logs | `main.tf` |
-| ECR (×5) | backend, frontend, and the 3 worker images | `main.tf` |
-| IAM | One task role per worker, scoped to only its own queue | `iam.tf` |
-| CloudWatch Logs | One log group per service, 30-day retention | `main.tf` |
+| S3 bucket (private) | Uploaded models and converted artifacts | ~$0 at this size |
+| SQS `modelforge-cpu`, `modelforge-tensorrt` + DLQs | Job queues; a job failing 3 times goes to its DLQ | ~$0 |
+| RDS PostgreSQL db.t4g.micro | Shared database for the API and all workers | ~$15/month, always on |
+| ECS Fargate CPU worker (1 vCPU, 4 GB) | TFLite + ONNX baseline + Core ML jobs | ~$0.06/hour while running |
+| ECR repository | The CPU worker image | cents |
+| IAM roles | Worker can only use the bucket and its own queue | free |
+| CloudWatch Logs (7 days) | Worker logs | cents |
 
-## Local mock mode maps 1:1 onto this
+The database is reachable only from `my_ip_cidr` (the laptop) and the ECS workers.
+TensorRT runs on the laptop because an engine only runs on the GPU model it was built
+on, and a cloud GPU would exceed the budget.
 
-| Production | Local (`AWS_MODE=mock`) |
-|---|---|
-| S3 | `LocalStorageProvider` writing under `LOCAL_STORAGE_ROOT` |
-| EventBridge + SQS | `LocalQueueProvider` (in-process `queue.Queue` per format) |
-| ECS task | A daemon thread spawned by `LocalJobExecutor` |
-| RDS | The same PostgreSQL container from `docker-compose.yml` |
+## Commands
 
-Every provider is selected by `app/*/factory.py` based on `AWS_MODE`, so
-`app/workers/conversion_worker.py` — the actual conversion pipeline — is identical in
-both modes.
+```powershell
+# Create / update the infrastructure (review the plan first)
+cd infrastructure/terraform
+terraform plan -out=tfplan
+terraform apply tfplan
 
-## Deploying for real
+# Stop the Fargate worker cost: set cpu_worker_count = 0 in terraform.tfvars, then plan + apply
+# Remove everything (stops all charges, deletes the bucket and database)
+terraform destroy
+```
 
-1. Build and push images: `docker build ... && docker push` to each ECR repo above (or
-   let CI's `docker-build` job do it once wired to `aws-actions/amazon-ecr-login`).
-2. `cd infrastructure/terraform && terraform init && terraform plan` — review the plan.
-3. `terraform apply` only after reviewing cost and IAM scope.
-4. Set `AWS_MODE=aws` and the `S3_BUCKET` / `SQS_*_QUEUE` values from `terraform output`
-   in the backend's environment.
+Run the app in AWS mode (`backend/.env.aws`, created from `terraform output`):
+
+```powershell
+cd backend
+$env:ENV_FILE=".env.aws"
+..\.venv\Scripts\python.exe -m alembic upgrade head          # once, creates the tables in RDS
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 # API
+..\.venv\Scripts\python.exe ..\workers\tensorrt_worker.py      # GPU worker (second terminal, same ENV_FILE)
+```
+
+If the laptop's public IP changes (different Wi-Fi), update `my_ip_cidr` and apply again,
+otherwise the API cannot reach the database.

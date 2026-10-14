@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useConversions } from "@/hooks/use-conversions";
 import { useCompareBenchmarks } from "@/hooks/use-benchmarks";
-import { formatBytes, formatMs, formatPct } from "@/lib/format";
+import { formatBytes, formatMs, formatPct, formatTarget } from "@/lib/format";
 
 export default function ComparePage() {
   const { data: conversions, isLoading } = useConversions();
@@ -33,19 +33,13 @@ export default function ComparePage() {
 
   const result = compare.data;
 
-  type MetricKey = "model_size_bytes" | "latency_mean_ms" | "accuracy_pct" | "memory_usage_mb";
+  type MetricKey = "model_size_bytes" | "latency_mean_ms" | "fidelity_pct";
   const metricRows: { key: MetricKey; label: string; format: (v: number | null | undefined) => string; bestId: string | null | undefined }[] =
     result
       ? [
           { key: "model_size_bytes", label: "Size", format: formatBytes, bestId: result.smallest_size_job_id },
           { key: "latency_mean_ms", label: "Latency", format: formatMs, bestId: result.best_latency_job_id },
-          { key: "accuracy_pct", label: "Accuracy", format: formatPct, bestId: result.highest_accuracy_job_id },
-          {
-            key: "memory_usage_mb",
-            label: "Memory",
-            format: (v) => (v ? `${v.toFixed(1)} MB` : "N/A"),
-            bestId: null,
-          },
+          { key: "fidelity_pct", label: "Fidelity vs ONNX", format: formatPct, bestId: result.highest_fidelity_job_id },
         ]
       : [];
 
@@ -70,7 +64,7 @@ export default function ComparePage() {
                 className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-surface-2"
               >
                 <Checkbox checked={selected.includes(job.id)} onCheckedChange={() => toggle(job.id)} />
-                <span className="font-mono uppercase">{job.target_format}</span>
+                <span className="font-mono uppercase">{formatTarget(job.target_format)}</span>
                 <span className="text-muted-foreground">· {job.optimization.toUpperCase()}</span>
               </label>
             ))}
@@ -87,7 +81,7 @@ export default function ComparePage() {
                 <th className="py-2 pr-4 font-normal">Metric</th>
                 {result.rows.map((row) => (
                   <th key={row.job_id} className="py-2 pr-4 font-mono font-medium uppercase text-foreground">
-                    {row.model_name} <span className="text-muted-foreground">/ {row.target_format}</span>
+                    {row.model_name} <span className="text-muted-foreground">/ {formatTarget(row.target_format)}</span>
                   </th>
                 ))}
               </tr>
@@ -104,7 +98,12 @@ export default function ComparePage() {
                         key={row.job_id}
                         className={cn("py-2 pr-4 font-mono tabular-nums", isBest && "font-semibold text-success")}
                       >
-                        {metric.format(value)}
+                        {/* ONNX is the reference other formats' fidelity is measured against, so it has no score of its own. */}
+                        {metric.key === "fidelity_pct" && row.target_format === "onnx" ? (
+                          <span className="text-muted-foreground">baseline</span>
+                        ) : (
+                          metric.format(value)
+                        )}
                         {isBest && <Trophy className="ml-1.5 inline size-3.5" />}
                       </td>
                     );
@@ -118,7 +117,7 @@ export default function ComparePage() {
             <p className="font-medium">Recommendation</p>
             <RecommendationLine label="Best latency" jobId={result.best_latency_job_id} rows={result.rows} />
             <RecommendationLine label="Smallest model" jobId={result.smallest_size_job_id} rows={result.rows} />
-            <RecommendationLine label="Highest accuracy" jobId={result.highest_accuracy_job_id} rows={result.rows} />
+            <RecommendationLine label="Highest fidelity" jobId={result.highest_fidelity_job_id} rows={result.rows} />
             <RecommendationLine label="Best overall" jobId={result.best_overall_job_id} rows={result.rows} />
           </div>
         </div>
@@ -140,7 +139,7 @@ function RecommendationLine({
   return (
     <p className="text-muted-foreground">
       <span className="text-foreground">{label}:</span>{" "}
-      {row ? `${row.model_name} (${row.target_format.toUpperCase()})` : "N/A"}
+      {row ? `${row.model_name} (${formatTarget(row.target_format)})` : "N/A"}
     </p>
   );
 }

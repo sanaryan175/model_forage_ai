@@ -15,8 +15,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ConversionConfigDialog } from "@/components/conversions/conversion-config-dialog";
 import { useDeleteModel, useModel, useModelArtifacts } from "@/hooks/use-models";
 import { useConversions } from "@/hooks/use-conversions";
-import { formatBytes, formatDate } from "@/lib/format";
-import { apiErrorMessage, API_URL } from "@/lib/api-client";
+import { formatBytes, formatDate, formatTarget } from "@/lib/format";
+import { apiErrorMessage, downloadArtifact } from "@/lib/api-client";
 
 export default function ModelDetailPage({ params }: { params: Promise<{ modelId: string }> }) {
   const { modelId } = use(params);
@@ -121,12 +121,13 @@ export default function ModelDetailPage({ params }: { params: Promise<{ modelId:
                     <p className="font-mono uppercase">{artifact.format}</p>
                     <p className="text-xs text-muted-foreground">{formatBytes(artifact.file_size)}</p>
                   </div>
-                  <a
-                    href={`${API_URL}/api/models/artifacts/download-local?key=${encodeURIComponent(artifact.file_path)}`}
+                  <button
+                    type="button"
+                    onClick={() => downloadArtifact(artifact).catch((e) => toast.error(apiErrorMessage(e, "Download failed")))}
                     className="text-muted-foreground hover:text-primary"
                   >
                     <Download className="size-4" />
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -152,7 +153,7 @@ export default function ModelDetailPage({ params }: { params: Promise<{ modelId:
             <TableBody>
               {modelJobs.map((job) => (
                 <TableRow key={job.id} className="cursor-pointer" onClick={() => router.push(`/conversions/${job.id}`)}>
-                  <TableCell className="font-mono uppercase">{job.target_format}</TableCell>
+                  <TableCell className="font-mono uppercase">{formatTarget(job.target_format)}</TableCell>
                   <TableCell className="font-mono uppercase text-muted-foreground">{job.optimization}</TableCell>
                   <TableCell>
                     <StatusBadge status={job.status} />

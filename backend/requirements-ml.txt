@@ -1,10 +1,15 @@
-# Heavier ML dependencies used by the local in-process worker (LocalJobExecutor) and by ml/ scripts.
-# Kept separate from requirements.txt so the core API can start without them; conversion routes
-# that need a missing package report a clear "unsupported in this environment" error instead of failing to boot.
-torch==2.9.0
-torchvision==0.24.0
+# CPU conversion dependencies (TFLite + PyTorch->ONNX export). Installed in the ECS CPU
+# worker image and the local venv. Pinned to the versions the pipeline was tested with.
+# Without them the API still starts; conversions report a clear "not installed" error.
 tensorflow==2.21.0
-onnx2tf==2.6.8
 tf-keras==2.21.0
-coremltools==9.0
-psutil  # version pinned transitively by onnx2tf (==5.9.5)
+torch==2.14.0
+# onnx2tf declares no dependencies of its own; these are the ones it imports at runtime.
+onnx2tf==1.28.8
+onnx_graphsurgeon==0.6.1
+sng4onnx==2.0.1
+sne4onnx==2.0.1
+onnxsim==0.7.3
+ai-edge-litert==2.2.0
+psutil==7.2.2
+flatbuffers==25.12.19

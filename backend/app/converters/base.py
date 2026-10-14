@@ -8,7 +8,6 @@ class ConversionConfig:
     batch_size: int = 1
     target_device: str = "cpu"
     input_shape: list[int] | None = None
-    calibration_dataset_path: str | None = None
 
 
 @dataclass
@@ -37,8 +36,9 @@ class BenchmarkResult:
     latency_median_ms: float | None = None
     latency_p95_ms: float | None = None
     throughput_ips: float | None = None
-    accuracy_pct: float | None = None
-    memory_usage_mb: float | None = None
+    fidelity_pct: float | None = None
+    """% of synthetic inputs where the converted model's top-1 class matches the original ONNX model.
+    Measures conversion faithfulness, not task accuracy (that needs a labelled dataset)."""
     device: str = "cpu"
     unsupported_metrics: list[str] = field(default_factory=list)
     """Metrics that could not be measured in this environment; reported as N/A, never fabricated."""
@@ -68,13 +68,3 @@ class ModelConverter(ABC):
     @abstractmethod
     def benchmark(self, converted_path: str, onnx_model_path: str, config: ConversionConfig) -> BenchmarkResult:
         """Run real inference benchmarks. Never invent numbers for metrics that can't be measured."""
-
-    def cleanup(self, paths: list[str]) -> None:
-        import os
-
-        for path in paths:
-            try:
-                if path and os.path.exists(path) and os.path.isfile(path):
-                    os.remove(path)
-            except OSError:
-                pass

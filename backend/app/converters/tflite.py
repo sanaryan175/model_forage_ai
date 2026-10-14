@@ -4,7 +4,6 @@ import os
 from app.benchmark.engine import (
     generate_synthetic_inputs,
     measure_file_size,
-    measure_process_memory_mb,
     timed_inference_stats,
     top1_agreement_pct,
 )
@@ -34,7 +33,18 @@ class TFLiteConverter(ModelConverter):
         if not supported:
             return ConversionResult(success=False, error=reason, is_environment_limited=True, logs=[reason])
 
+        import importlib
+
+        import numpy as np
         import onnx2tf
+
+        # onnx2tf downloads a sample-image .npy from a GitHub release on every conversion (only to
+        # sanity-check outputs; we never use its INT8 calibration). That download breaks offline and
+        # in containers, so hand it the same-shaped zeros instead.
+        # ponytail: patches an onnx2tf internal; re-check after upgrading onnx2tf.
+        importlib.import_module("onnx2tf.onnx2tf").download_test_image_data = (
+            lambda: np.zeros((20, 128, 128, 3), dtype=np.float32)
+        )
 
         logs: list[str] = []
         os.makedirs(output_dir, exist_ok=True)
@@ -55,60 +65,21 @@ class TFLiteConverter(ModelConverter):
                 success=False, error="onnx2tf did not produce a .tflite output file", logs=logs
             )
 
-        output_path = os.path.join(output_dir, min(tflite_files))
+        # onnx2tf writes both *_float32.tflite and *_float16.tflite; FP16 is just picking the second one.
+        wanted = "float16" if config.optimization == "fp16" else "float32"
+        output_path = os.path.join(output_dir, next((f for f in tflite_files if wanted in f), tflite_files[0]))
         logs.append(f"Produced {output_path}")
         return ConversionResult(success=True, output_path=output_path, logs=logs)
 
     def optimize(self, converted_path: str, config: ConversionConfig) -> OptimizationResult:
-        if config.optimization == "fp32":
-            return OptimizationResult(applied=True, optimization="fp32", note="No quantization requested")
-
-        if config.optimization == "fp16":
-            return self._reconvert_with_quantization(converted_path, config, quantize="fp16")
-
-        if config.optimization == "int8":
-            if not config.calibration_dataset_path:
-                return OptimizationResult(
-                    applied=False,
-                    optimization="int8",
-                    note="INT8 quantization requires a calibration dataset, which was not provided",
-                )
-            return self._reconvert_with_quantization(converted_path, config, quantize="int8")
-
-        return OptimizationResult(applied=False, optimization=config.optimization, note="Unknown optimization type")
-
-    def _reconvert_with_quantization(
-        self, converted_path: str, config: ConversionConfig, quantize: str
-    ) -> OptimizationResult:
-        """TFLite quantization must be applied by TFLiteConverter at conversion time, not
-        post-hoc on the FlatBuffer, so we re-run the saved-model -> tflite step with the
-        appropriate converter flags set.
-        """
-        try:
-            import tensorflow as tf
-        except ImportError:
-            return OptimizationResult(
-                applied=False, optimization=quantize, note="TensorFlow is not installed in this environment"
-            )
-
-        saved_model_dir = os.path.dirname(converted_path)
-        try:
-            converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
-            converter.optimizations = [tf.lite.Optimize.DEFAULT]
-            if quantize == "fp16":
-                converter.target_spec.supported_types = [tf.float16]
-            elif quantize == "int8":
-                converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-                converter.inference_input_type = tf.int8
-                converter.inference_output_type = tf.int8
-            quantized = converter.convert()
-            with open(converted_path, "wb") as f:
-                f.write(quantized)
-            return OptimizationResult(applied=True, optimization=quantize)
-        except Exception as exc:
-            return OptimizationResult(
-                applied=False, optimization=quantize, note=f"Quantization unavailable in current environment: {exc}"
-            )
+        if config.optimization in ("fp32", "fp16"):
+            # Already applied in convert(): onnx2tf emits both precisions.
+            return OptimizationResult(applied=True, optimization=config.optimization)
+        return OptimizationResult(
+            applied=False,
+            optimization=config.optimization,
+            note="INT8 TFLite quantization needs a representative calibration dataset, which this platform does not collect yet",
+        )
 
     def benchmark(self, converted_path: str, onnx_model_path: str, config: ConversionConfig) -> BenchmarkResult:
         try:
@@ -116,7 +87,7 @@ class TFLiteConverter(ModelConverter):
         except ImportError:
             return BenchmarkResult(
                 model_size_bytes=measure_file_size(converted_path) if os.path.exists(converted_path) else None,
-                unsupported_metrics=["latency_mean_ms", "latency_median_ms", "latency_p95_ms", "throughput_ips", "accuracy_pct", "memory_usage_mb"],
+                unsupported_metrics=["latency_mean_ms", "latency_median_ms", "latency_p95_ms", "throughput_ips", "fidelity_pct"],
             )
 
         interpreter = tf.lite.Interpreter(model_path=converted_path)
@@ -134,11 +105,16 @@ class TFLiteConverter(ModelConverter):
             return interpreter.get_tensor(output_details["index"])
 
         stats = timed_inference_stats(lambda: run_once(inputs[0]), iterations=50)
-        memory_mb = measure_process_memory_mb(lambda: run_once(inputs[0]))
 
         tflite_outputs = [run_once(sample) for sample in inputs]
         onnx_outputs = run_onnx_inference(onnx_model_path, inputs)
-        accuracy = top1_agreement_pct(onnx_outputs, tflite_outputs)
+        # onnx2tf makes 4D outputs channels-last (NHWC) while ONNX is NCHW. Put them back in ONNX
+        # layout, otherwise the flattened argmax compares different elements and fidelity reads 0%.
+        tflite_outputs = [
+            out.transpose(0, 3, 1, 2) if out.ndim == 4 and out.transpose(0, 3, 1, 2).shape == ref.shape != out.shape else out
+            for out, ref in zip(tflite_outputs, onnx_outputs, strict=True)
+        ]
+        fidelity = top1_agreement_pct(onnx_outputs, tflite_outputs)
 
         return BenchmarkResult(
             model_size_bytes=measure_file_size(converted_path),
@@ -146,8 +122,6 @@ class TFLiteConverter(ModelConverter):
             latency_median_ms=stats["median_ms"],
             latency_p95_ms=stats["p95_ms"],
             throughput_ips=stats["throughput_ips"],
-            accuracy_pct=accuracy,
-            memory_usage_mb=memory_mb,
+            fidelity_pct=fidelity,
             device="cpu",
-            unsupported_metrics=[] if memory_mb is not None else ["memory_usage_mb"],
         )

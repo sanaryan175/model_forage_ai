@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.conversion_job import ConversionJob, JobStatus, OptimizationType, TargetFormat
 from app.models.model import Model, ModelStatus
 from app.repositories.conversion_repository import ConversionRepository
+from app.workers.conversion_worker import is_running
 from app.workers.job_executor import get_job_executor
 
 
@@ -34,13 +35,18 @@ class ConversionService:
                 f"Model '{model.name}' is not ready for conversion (status: {model.status.value})"
             )
 
+        # Every model gets one FP32 ONNX Runtime baseline job so converted formats have a reference to compare against.
+        requests = [(fmt, optimization) for fmt in target_formats if fmt != TargetFormat.ONNX]
+        if not any(j.target_format == TargetFormat.ONNX for j in model.conversion_jobs):
+            requests.append((TargetFormat.ONNX, OptimizationType.FP32))
+
         jobs = []
         shape_str = ",".join(str(d) for d in input_shape) if input_shape else None
-        for target_format in target_formats:
+        for target_format, job_optimization in requests:
             job = ConversionJob(
                 model_id=model.id,
                 target_format=target_format,
-                optimization=optimization,
+                optimization=job_optimization,
                 batch_size=batch_size,
                 target_device=target_device,
                 input_shape=shape_str,
@@ -66,6 +72,9 @@ class ConversionService:
     def retry(self, job: ConversionJob) -> ConversionJob:
         if job.status not in (JobStatus.FAILED, JobStatus.CANCELLED):
             raise InvalidJobStateError(f"Cannot retry a job in status '{job.status.value}'")
+        # ponytail: only sees runs in this process; in AWS mode a cancelled run still stopping on a worker isn't detected.
+        if is_running(job.id):
+            raise InvalidJobStateError("The cancelled run is still stopping; retry in a few seconds")
         job.status = JobStatus.QUEUED
         job.progress = 0
         job.error_message = None

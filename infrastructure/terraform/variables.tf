@@ -1,5 +1,5 @@
 variable "project" {
-  description = "Resource name prefix"
+  description = "Prefix for every resource name"
   type        = string
   default     = "modelforge"
 }
@@ -9,41 +9,30 @@ variable "aws_region" {
   default = "ap-south-1"
 }
 
-variable "environment" {
-  type    = string
-  default = "production"
-}
-
-variable "db_username" {
-  type      = string
-  default   = "modelforge"
-  sensitive = true
+variable "aws_profile" {
+  description = "AWS CLI profile Terraform uses (aws configure --profile ...)"
+  type        = string
+  default     = "modelforge"
 }
 
 variable "db_password" {
-  type      = string
-  sensitive = true
+  description = "RDS master password. Put it in terraform.tfvars (git-ignored), never in code."
+  type        = string
+  sensitive   = true
 }
 
-variable "db_instance_class" {
-  type    = string
-  default = "db.t4g.micro"
-}
-
-variable "vpc_id" {
-  description = "Existing VPC to deploy into"
+variable "my_ip_cidr" {
+  description = "Your laptop's public IP as x.x.x.x/32, the only outside address allowed to reach the database"
   type        = string
 }
 
-variable "private_subnet_ids" {
-  type = list(string)
+variable "cpu_worker_count" {
+  description = "Running CPU workers. Each costs ~$0.06/hour; set to 0 when not using the cloud pipeline."
+  type        = number
+  default     = 1
 }
 
-variable "public_subnet_ids" {
-  type = list(string)
-}
-
-variable "container_image_tag" {
+variable "worker_image_tag" {
   type    = string
   default = "latest"
 }

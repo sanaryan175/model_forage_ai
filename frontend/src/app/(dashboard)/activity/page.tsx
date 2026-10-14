@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useModels } from "@/hooks/use-models";
 import { useConversions } from "@/hooks/use-conversions";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatTarget } from "@/lib/format";
 
 type ActivityEvent = {
   id: string;
@@ -53,14 +53,14 @@ export default function ActivityPage() {
       items.push({
         id: `start-${job.id}`,
         type: "started",
-        message: `${job.target_format.toUpperCase()} conversion started`,
+        message: `${formatTarget(job.target_format)} run started`,
         timestamp: job.created_at,
       });
       if (job.completed_at) {
         items.push({
           id: `end-${job.id}`,
           type: job.status === "completed" ? "completed" : job.status === "cancelled" ? "cancelled" : "failed",
-          message: `${job.target_format.toUpperCase()} conversion ${job.status}`,
+          message: `${formatTarget(job.target_format)} run ${job.status}`,
           timestamp: job.completed_at,
         });
       }
