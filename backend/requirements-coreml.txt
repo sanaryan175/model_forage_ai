@@ -1,0 +1,3 @@
+# Core ML conversion (TorchScript .pt -> .mlpackage). Linux/macOS only: coremltools has no
+# Windows build, so this is installed in the ECS CPU worker image, not the Windows venv.
+coremltools==9.0

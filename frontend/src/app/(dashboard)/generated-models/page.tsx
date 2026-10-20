@@ -14,7 +14,7 @@ import { apiErrorMessage, downloadArtifact } from "@/lib/api-client";
 const EXTENSION_BY_FORMAT: Record<string, string> = {
   tflite: ".tflite",
   tensorrt: ".engine",
-  coreml: ".mlmodel",
+  coreml: ".mlpackage.zip",
   onnx: ".onnx",
 };
 

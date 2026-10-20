@@ -10,7 +10,7 @@ Source: <https://github.com/sanaryan175/model_forage_ai>
 ```
 PyTorch (.pt)  ──►  ONNX  ──►  TFLite (FP32 / FP16)      CPU, mobile, edge
                          └──►  TensorRT (FP32 / FP16)    NVIDIA GPU
-                         └──►  Core ML                   macOS only (reported as unsupported elsewhere)
+PyTorch (.pt)  ─────────────►  Core ML (FP32 / FP16)     Apple devices (converted on Linux, runs on macOS/iOS)
 ```
 
 ## Features
@@ -18,7 +18,7 @@ PyTorch (.pt)  ──►  ONNX  ──►  TFLite (FP32 / FP16)      CPU, mobile
 - **Model upload and validation**: ONNX models or TorchScript `.pt` files. Every upload is
   checked (graph validity, input/output shapes) and run once through ONNX Runtime.
 - **Conversion pipelines**: TFLite via onnx2tf + TensorFlow, TensorRT engines built on an
-  NVIDIA GPU, in FP32 or FP16. Jobs run in the background with live status and logs, can be
+  NVIDIA GPU, and Core ML via coremltools (from TorchScript `.pt` uploads only), in FP32 or FP16. Jobs run in the background with live status and logs, can be
   cancelled and retried. INT8 is not supported yet (it needs calibration data).
 - **ONNX baseline**: every model is also benchmarked unchanged under ONNX Runtime, the
   reference all converted formats are compared against.
@@ -78,6 +78,7 @@ and costs: [`infrastructure/aws/README.md`](infrastructure/aws/README.md).
 | ONNX, ONNX Runtime | API and all workers | Common model format; upload validation; baseline benchmark |
 | onnx2tf, TensorFlow Lite | CPU worker | ONNX → `.tflite` (FP32 / FP16) |
 | TensorRT, cuda-python | GPU worker | ONNX → GPU-optimized `.engine` (FP32 / FP16) |
+| coremltools | CPU worker | TorchScript `.pt` → Core ML `.mlpackage` (zipped); latency and fidelity show "N/A (requires macOS)" |
 | FastAPI, SQLAlchemy 2, Alembic | Backend | REST API, database models, migrations |
 | PyJWT, passlib (bcrypt) | Backend | Authentication |
 | Next.js 16, React, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query | Frontend | Dashboard |
@@ -109,6 +110,7 @@ backend/
   requirements.txt       API + tests
   requirements-ml.txt    CPU conversion (TensorFlow, onnx2tf, PyTorch)
   requirements-gpu.txt   TensorRT (NVIDIA GPU machines only)
+  requirements-coreml.txt  Core ML (Linux/macOS; installed in the ECS worker image, not on Windows)
 frontend/src/      Next.js app (pages, components, API client, auth context)
 workers/           cpu_worker.py (ECS), tensorrt_worker.py (GPU laptop)
 ml/

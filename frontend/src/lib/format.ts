@@ -22,6 +22,20 @@ export function formatThroughput(ips: number | null | undefined): string {
   return `${ips.toFixed(1)} inf/s`;
 }
 
+/** Core ML models can only run on Apple hardware, so the Linux worker leaves inference metrics empty. */
+export function formatMetric(
+  value: number | null | undefined,
+  format: (v: number | null | undefined) => string,
+  benchmark: { target_format: string; unsupported_metrics: string | null } | null | undefined,
+  key: string,
+): string {
+  const needsMacOS =
+    (value === null || value === undefined) &&
+    benchmark?.target_format === "coreml" &&
+    (benchmark.unsupported_metrics ?? "").split(",").includes(key);
+  return needsMacOS ? "N/A (requires macOS)" : format(value);
+}
+
 /** "onnx" jobs are the auto-added reference run, not a conversion the user asked for. */
 export function formatTarget(format: string): string {
   return format === "onnx" ? "ONNX baseline" : format.toUpperCase();

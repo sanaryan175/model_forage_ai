@@ -89,15 +89,25 @@ export function ConversionConfigDialog({
           <div className="space-y-2">
             <Label>Target Formats</Label>
             <div className="space-y-2">
-              {FORMATS.map((format) => (
-                <label key={format.value} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={formats.includes(format.value)}
-                    onCheckedChange={() => toggleFormat(format.value)}
-                  />
-                  {format.label}
-                </label>
-              ))}
+              {FORMATS.map((format) => {
+                // coremltools converts from PyTorch, not ONNX, so Core ML needs a .pt upload.
+                const unavailable = format.value === "coreml" && modelFramework !== "pytorch";
+                return (
+                  <label key={format.value} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={formats.includes(format.value)}
+                      disabled={unavailable}
+                      onCheckedChange={() => toggleFormat(format.value)}
+                    />
+                    {format.label}
+                    {format.value === "coreml" && (
+                      <span className="text-xs text-muted-foreground">
+                        {unavailable ? "(needs a .pt upload)" : "(benchmarks need macOS)"}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
             </div>
             <p className="text-xs text-muted-foreground">
               The original model is also benchmarked once under ONNX Runtime as the comparison baseline.

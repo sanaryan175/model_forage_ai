@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBenchmarks } from "@/hooks/use-benchmarks";
-import { formatBytes, formatMs, formatPct, formatTarget } from "@/lib/format";
+import { formatBytes, formatMetric, formatMs, formatPct, formatTarget } from "@/lib/format";
 
 const chartTooltipStyle = {
   background: "var(--color-surface-2)",
@@ -88,9 +88,9 @@ export default function BenchmarksPage() {
                     <TableCell className="font-mono uppercase">{formatTarget(b.target_format)}</TableCell>
                     <TableCell className="font-mono uppercase text-muted-foreground">{b.optimization}</TableCell>
                     <TableCell className="font-mono tabular-nums">{formatBytes(b.model_size_bytes)}</TableCell>
-                    <TableCell className="font-mono tabular-nums">{formatMs(b.latency_mean_ms)}</TableCell>
+                    <TableCell className="font-mono tabular-nums">{formatMetric(b.latency_mean_ms, formatMs, b, "latency_mean_ms")}</TableCell>
                     <TableCell className="font-mono tabular-nums">
-                      {b.target_format === "onnx" ? "baseline" : formatPct(b.fidelity_pct)}
+                      {b.target_format === "onnx" ? "baseline" : formatMetric(b.fidelity_pct, formatPct, b, "fidelity_pct")}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useConversions } from "@/hooks/use-conversions";
 import { useCompareBenchmarks } from "@/hooks/use-benchmarks";
-import { formatBytes, formatMs, formatPct, formatTarget } from "@/lib/format";
+import { formatBytes, formatMetric, formatMs, formatPct, formatTarget } from "@/lib/format";
 
 export default function ComparePage() {
   const { data: conversions, isLoading } = useConversions();
@@ -102,7 +102,7 @@ export default function ComparePage() {
                         {metric.key === "fidelity_pct" && row.target_format === "onnx" ? (
                           <span className="text-muted-foreground">baseline</span>
                         ) : (
-                          metric.format(value)
+                          formatMetric(value, metric.format, row.benchmark, metric.key)
                         )}
                         {isBest && <Trophy className="ml-1.5 inline size-3.5" />}
                       </td>

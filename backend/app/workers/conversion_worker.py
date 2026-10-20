@@ -110,6 +110,7 @@ def run_conversion_job(job_id: str) -> None:
             batch_size=job.batch_size,
             target_device=job.target_device,
             input_shape=parsed_shape,
+            pytorch_model_path=local_path if model.framework == ModelFramework.PYTORCH else None,
         )
         converter = get_converter(job.target_format.value)
 

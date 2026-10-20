@@ -82,3 +82,36 @@ def test_tflite_fidelity_handles_channels_last_outputs(tmp_path):
     result = converter.convert(str(onnx_path), str(tmp_path / "out"), config)
     assert result.success, result.error
     assert converter.benchmark(result.output_path, str(onnx_path), config).fidelity_pct == 100.0
+
+
+def test_coreml_rejects_onnx_uploads_with_a_clear_reason(tmp_path):
+    from app.converters.base import ConversionConfig
+
+    result = get_converter("coreml").convert("model.onnx", str(tmp_path), ConversionConfig(optimization="fp32"))
+    assert not result.success
+    assert ".pt" in result.error
+
+
+@pytest.mark.skipif(not get_converter("coreml").is_supported()[0], reason="needs coremltools (Linux/macOS)")
+@pytest.mark.parametrize("optimization", ["fp32", "fp16"])
+def test_coreml_converts_torchscript_and_reports_inference_metrics_as_macos_only(tmp_path, optimization):
+    import zipfile
+
+    import torch
+
+    from app.converters.base import ConversionConfig
+
+    pt_path = tmp_path / "model.pt"
+    torch.jit.trace(torch.nn.Sequential(torch.nn.Conv2d(3, 4, 3), torch.nn.ReLU()), torch.randn(1, 3, 16, 16)).save(str(pt_path))
+    converter = get_converter("coreml")
+    config = ConversionConfig(optimization=optimization, input_shape=[1, 3, 16, 16], pytorch_model_path=str(pt_path))
+
+    result = converter.convert("unused.onnx", str(tmp_path / "out"), config)
+    assert result.success, result.error
+    assert result.output_path.endswith(f"_{optimization}.mlpackage.zip")
+    assert any(name.endswith("Manifest.json") for name in zipfile.ZipFile(result.output_path).namelist())
+
+    bench = converter.benchmark(result.output_path, "unused.onnx", config)
+    assert bench.model_size_bytes > 0
+    assert bench.latency_mean_ms is None and bench.fidelity_pct is None
+    assert "fidelity_pct" in bench.unsupported_metrics

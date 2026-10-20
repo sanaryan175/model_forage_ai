@@ -1,5 +1,6 @@
+import hashlib
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import BinaryIO
 
 from botocore.exceptions import ClientError
@@ -25,7 +26,10 @@ class S3StorageProvider(StorageProvider):
         return obj["Body"].read()
 
     def open_path(self, key: str) -> str:
-        local_path = self._tmp_dir / key.replace("/", "_")
+        # Short per-key folder + the object's real filename: keeps the path under Windows' 260-char
+        # limit and lets converters name their output after the original file, not the whole key.
+        # ponytail: the cache is never pruned; temp space grows with every download until the OS cleans it.
+        local_path = self._tmp_dir / hashlib.sha256(key.encode()).hexdigest()[:16] / PurePosixPath(key).name
         local_path.parent.mkdir(parents=True, exist_ok=True)
         self.client.download_file(self.bucket, key, str(local_path))
         return str(local_path)

@@ -85,6 +85,11 @@ const TECHNOLOGIES = [
     role: "Converts ONNX to .tflite (FP32 / FP16) for mobile and edge devices",
   },
   {
+    tech: "coremltools",
+    where: "CPU worker (ECS)",
+    role: "Converts TorchScript .pt uploads to Apple Core ML (.mlpackage); running it needs macOS",
+  },
+  {
     tech: "TensorRT + CUDA",
     where: "GPU worker (laptop RTX 2050)",
     role: "Builds GPU-optimized .engine files (FP32 / FP16)",
@@ -223,7 +228,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Chip highlight>TFLite</Chip>
             <Chip highlight>TensorRT</Chip>
-            <Chip muted>Core ML (macOS only)</Chip>
+            <Chip muted>Core ML (from .pt)</Chip>
           </div>
         </div>
       </section>

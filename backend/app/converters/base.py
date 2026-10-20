@@ -8,6 +8,8 @@ class ConversionConfig:
     batch_size: int = 1
     target_device: str = "cpu"
     input_shape: list[int] | None = None
+    pytorch_model_path: str | None = None
+    """The original TorchScript .pt, when the upload was PyTorch. Core ML converts from this, not from ONNX."""
 
 
 @dataclass
